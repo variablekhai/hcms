@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'controllers/user_controller.dart';
 import 'screens/user_view.dart';
+import 'screens/auth/register.dart';
 
 void main() {
   runApp(
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const UserView(),
+      home: const RegisterPage(),
     );
   }
 }
