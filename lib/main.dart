@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'controllers/user_controller.dart';
 import 'screens/user_view.dart';
-import 'screens/register.dart';
+import 'screens/auth/register.dart';
 
 void main() {
   runApp(

@@ -1,23 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:hcms/screens/register.dart';
+import 'package:hcms/screens/auth/login.dart';
 
-class LoginView extends StatefulWidget {
-  const LoginView({Key? key}) : super(key: key);
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({Key? key}) : super(key: key);
 
   @override
-  _LoginViewState createState() => _LoginViewState();
+  _RegisterPageState createState() => _RegisterPageState();
 }
 
-class _LoginViewState extends State<LoginView> {
+// Enum for account types
+enum AccountType {
+  houseOwner,
+  cleaner
+}
+
+class _RegisterPageState extends State<RegisterPage> {
   // Text controllers for form fields
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
   // Form key for validation
   final _formKey = GlobalKey<FormState>();
 
-  // Password visibility toggle
-  bool _isPasswordVisible = false;
+  // Account type selection
+  AccountType _selectedAccountType = AccountType.houseOwner;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +38,7 @@ class _LoginViewState extends State<LoginView> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 100),
+                const SizedBox(height: 80),
                 
                 // Logo
                 FlutterLogo(
@@ -43,9 +50,43 @@ class _LoginViewState extends State<LoginView> {
                 
                 // Title
                 Text(
-                  'Welcome Back',
+                  'Create Account',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                
+                const SizedBox(height: 30),
+
+                // Account Type Selection
+                Text(
+                  'Select Account Type',
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ChoiceChip(
+                      label: Text('House Owner'),
+                      selected: _selectedAccountType == AccountType.houseOwner,
+                      onSelected: (bool selected) {
+                        setState(() {
+                          _selectedAccountType = AccountType.houseOwner;
+                        });
+                      },
+                    ),
+                    const SizedBox(width: 16),
+                    ChoiceChip(
+                      label: Text('Cleaner'),
+                      selected: _selectedAccountType == AccountType.cleaner,
+                      onSelected: (bool selected) {
+                        setState(() {
+                          _selectedAccountType = AccountType.cleaner;
+                        });
+                      },
+                    ),
+                  ],
                 ),
                 
                 const SizedBox(height: 20),
@@ -72,63 +113,55 @@ class _LoginViewState extends State<LoginView> {
                   decoration: InputDecoration(
                     labelText: 'Password',
                     prefixIcon: Icon(Icons.lock),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _isPasswordVisible 
-                          ? Icons.visibility 
-                          : Icons.visibility_off
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _isPasswordVisible = !_isPasswordVisible;
-                        });
-                      },
-                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  obscureText: !_isPasswordVisible,
+                  obscureText: true,
                   validator: _validatePassword,
                 ),
                 
-                // Forgot Password
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: _handleForgotPassword,
-                    child: Text(
-                      'Forgot Password?',
-                      style: TextStyle(color: Theme.of(context).primaryColor),
+                const SizedBox(height: 16),
+                
+                // Confirm Password TextField
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  decoration: InputDecoration(
+                    labelText: 'Confirm Password',
+                    prefixIcon: Icon(Icons.lock_outline),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
+                  obscureText: true,
+                  validator: _validateConfirmPassword,
                 ),
                 
                 const SizedBox(height: 24),
                 
-                // Login Button
+                // Register Button
                 ElevatedButton(
-                  onPressed: _handleLogin,
+                  onPressed: _handleRegister,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: Text('Login'),
+                  child: Text('Register'),
                 ),
                 
                 const SizedBox(height: 20),
                 
-                // Register Navigation
+                // Login Navigation
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Don\'t have an account? '),
+                    Text('Already have an account? '),
                     GestureDetector(
-                      onTap: _navigateToRegister,
+                      onTap: _navigateToLogin,
                       child: Text(
-                        'Register here',
+                        'Login here',
                         style: TextStyle(
                           color: Theme.of(context).primaryColor,
                           fontWeight: FontWeight.bold,
@@ -181,7 +214,8 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 
-  // Validation Methods
+
+  // Validation Methods (Placeholder implementations)
   String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
       return 'Please enter an email';
@@ -200,31 +234,20 @@ class _LoginViewState extends State<LoginView> {
     return null;
   }
 
-  // Login Handler (Placeholder)
-  void _handleLogin() {
-    if (_formKey.currentState!.validate()) {
-      // Implement login logic
-      print('Login attempted');
-      
-      // Placeholder navigation based on user type
-      // In a real app, this would be determined by backend authentication
-      _navigateToUserScreen();
+  String? _validateConfirmPassword(String? value) {
+    if (value != _passwordController.text) {
+      return 'Passwords do not match';
     }
+    return null;
   }
 
-  // Navigation to Specific User Screens
-  void _navigateToUserScreen() {
-    // Placeholder navigation logic
-    // In a real app, this would be based on user role from authentication
-    // Navigator.of(context).pushReplacement(
-    //   MaterialPageRoute(builder: (context) => 
-    //     // Determine screen based on user type
-    //     userType == 'houseOwner' 
-    //       ? HouseOwnerDashboard() 
-    //       : CleanerDashboard()
-    //   )
-    // );
-    print('Navigating to user-specific screen');
+  // Registration Handler (Placeholder)
+  void _handleRegister() {
+    if (_formKey.currentState!.validate()) {
+      // Implement registration logic
+      print('Registration attempted');
+      print('Account Type: ${_selectedAccountType.name}');
+    }
   }
 
   // Google Sign-In Handler (Placeholder)
@@ -233,20 +256,14 @@ class _LoginViewState extends State<LoginView> {
     print('Google Sign-In attempted');
   }
 
-  // Forgot Password Handler (Placeholder)
-  void _handleForgotPassword() {
-    // Implement forgot password logic
-    print('Forgot Password tapped');
-  }
-
-  // Navigation to Register View (Placeholder)
-  void _navigateToRegister() {
-    // Implement navigation to register page
+  // Navigation to Login View (Placeholder)
+  void _navigateToLogin() {
+    // Implement navigation to login page
     // For example:
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => RegisterPage())
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => LoginView())
     );
-    print('Navigating to Register View');
+    print('Navigating to Login View');
   }
 
   @override
@@ -254,6 +271,7 @@ class _LoginViewState extends State<LoginView> {
     // Dispose controllers to prevent memory leaks
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 }
