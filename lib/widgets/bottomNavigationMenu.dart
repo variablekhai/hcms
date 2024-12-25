@@ -39,11 +39,11 @@ class _BottomNavigationMenuState extends State<BottomNavigationMenu> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.business),
+            icon: Icon(Icons.calendar_month),
             label: 'Booking',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.school),
+            icon: Icon(Icons.insert_chart),
             label: 'Report',
           ),
           BottomNavigationBarItem(
