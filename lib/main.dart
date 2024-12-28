@@ -1,9 +1,15 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
+import 'package:hcms/screens/booking/add_booking.dart';
+import 'package:hcms/screens/booking/booking_details.dart';
+import 'package:hcms/screens/booking/booking_list.dart';
+import 'package:hcms/screens/booking/edit_booking.dart';
+import 'package:moon_design/moon_design.dart';
 import 'package:provider/provider.dart';
 import 'controllers/user_controller.dart';
 import 'screens/user_view.dart';
 import 'screens/auth/register.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   runApp(
@@ -23,10 +29,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter MVC Example',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+      theme: ThemeData.light().copyWith(
+        textTheme: GoogleFonts.poppinsTextTheme(
+        ),
+        extensions: <ThemeExtension<dynamic>>[
+          MoonTheme(tokens: MoonTokens.light)
+        ]
       ),
-      home: const RegisterPage(),
-    );
+      home: BookingList(),
+        );
   }
 }
