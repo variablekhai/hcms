@@ -26,6 +26,8 @@ class HouseListScreen extends StatelessWidget {
     },
   ];
 
+ HouseListScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
