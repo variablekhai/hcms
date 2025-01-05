@@ -31,6 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
   provider: ^6.0.0
+  intl: ^0.18.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -39,6 +40,9 @@ dependencies:
   moon_design: ^1.0.7
   google_fonts: ^6.2.1
   dot_curved_bottom_nav: ^0.0.2
+  firebase_core: ^3.9.0
+  cloud_firestore: ^5.6.0
+
 
 dev_dependencies:
   flutter_test:
