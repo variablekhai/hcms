@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:hcms/screens/booking/add_booking.dart';
 import 'package:hcms/screens/booking/booking_details.dart';
 import 'package:hcms/screens/booking/widgets/filters_dropdown.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'widgets/status_chip.dart';
 
 Widget _buildHeader() {
   return Column(
@@ -52,10 +55,33 @@ class BookingList extends StatelessWidget {
           ),
           // Booking List Section
           Expanded(
-            child: ListView.builder(
-              itemCount: 5, // Replace with your booking list count
-              itemBuilder: (context, index) {
-                return const BookingCard();
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('bookings')
+                  .where('owner_id', isEqualTo: 'owneridtest')
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text('You have not made any bookings.'));
+                }
+                final bookings = snapshot.data!.docs;  
+                return ListView.builder(
+                  itemCount: bookings.length,
+                  itemBuilder: (context, index) {
+                    final booking = bookings[index];
+                    return BookingCard(
+                      bookingId: booking.id,
+                      houseId: booking['house_id'].id,
+                      cleanerId: booking['cleaner_id'],
+                      bookingDateTime: (booking['booking_datetime'] as Timestamp).toDate().toString(),
+                      bookingStatus: booking['booking_status'],
+                      bookingTotalCost: booking['booking_total_cost'],
+                    );
+                  },
+                );
               },
             ),
           ),
@@ -76,8 +102,49 @@ class BookingList extends StatelessWidget {
   }
 }
 
-class BookingCard extends StatelessWidget {
-  const BookingCard({Key? key}) : super(key: key);
+class BookingCard extends StatefulWidget {
+  final String bookingId;
+  final String houseId;
+  final String cleanerId;
+  final String bookingDateTime;
+  final String bookingStatus;
+  final double bookingTotalCost;
+
+  const BookingCard({
+    super.key,
+    required this.bookingId,
+    required this.houseId,
+    required this.cleanerId,
+    required this.bookingDateTime,
+    required this.bookingStatus,
+    required this.bookingTotalCost,
+  });
+
+  @override
+  // ignore: library_private_types_in_public_api
+  _BookingCardState createState() => _BookingCardState();
+}
+
+class _BookingCardState extends State<BookingCard> {
+  String houseName = '';
+  String houseImage = '';
+  String houseAddress = '';
+
+  Future<DocumentSnapshot> getHouseData(String houseId) async {
+    return await FirebaseFirestore.instance.collection('houses').doc(houseId).get();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getHouseData(widget.houseId).then((houseData) {
+      setState(() {
+        houseName = houseData['house_name'];
+        houseImage = houseData['house_picture'];
+        houseAddress = houseData['house_address'];
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +154,9 @@ class BookingCard extends StatelessWidget {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const BookingDetails()),
+              MaterialPageRoute(builder: (context) => BookingDetails(
+                bookingId: widget.bookingId,
+                )),
             );
           },
           child: Card(
@@ -103,13 +172,15 @@ class BookingCard extends StatelessWidget {
                 Container(
                   height: 220,
                   width: double.infinity,
-                  decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.only(
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(12),
                       topRight: Radius.circular(12),
                     ),
                     image: DecorationImage(
-                      image: AssetImage('barefoot-villa.jpg'),
+                        image: houseImage.isNotEmpty
+                          ? NetworkImage(houseImage)
+                          : const AssetImage('assets/placeholder.png') as ImageProvider,
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -119,9 +190,9 @@ class BookingCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Barefoot Villa',
-                        style: TextStyle(
+                      Text(
+                        houseName,
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -131,10 +202,10 @@ class BookingCard extends StatelessWidget {
                         children: [
                           const Icon(Icons.event, size: 16, color: Colors.grey),
                           const SizedBox(width: 4),
-                          Text(
-                            '12/12/2024',
+                            Text(
+                            '${widget.bookingDateTime.split(' ')[0].split('-')[2]}/${widget.bookingDateTime.split(' ')[0].split('-')[1]}/${widget.bookingDateTime.split(' ')[0].split('-')[0]}',
                             style: TextStyle(color: Colors.grey[700]),
-                          ),
+                            ),
                         ],
                       ),
                       const SizedBox(height: 6),
@@ -144,7 +215,18 @@ class BookingCard extends StatelessWidget {
                               size: 16, color: Colors.grey),
                           const SizedBox(width: 4),
                           Text(
-                            '1:00 PM - 3:00 PM',
+                            '${widget.bookingDateTime.split(' ')[1].substring(0, 5)} ${int.parse(widget.bookingDateTime.split(' ')[1].substring(0, 2)) >= 12 ? 'PM' : 'AM'}',
+                            style: TextStyle(color: Colors.grey[700]),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          const Icon(Icons.payments, size: 16, color: Colors.grey),
+                          const SizedBox(width: 4),
+                          Text(
+                            'RM ${widget.bookingTotalCost.toStringAsFixed(2)}',
                             style: TextStyle(color: Colors.grey[700]),
                           ),
                         ],
@@ -155,7 +237,7 @@ class BookingCard extends StatelessWidget {
                           const Icon(Icons.face, size: 16, color: Colors.grey),
                           const SizedBox(width: 4),
                           Text(
-                            'John Doe',
+                            widget.cleanerId == 'N/A' ? 'No cleaner assigned yet' : 'Cleaner assigned',
                             style: TextStyle(color: Colors.grey[700]),
                           ),
                         ],
@@ -167,49 +249,13 @@ class BookingCard extends StatelessWidget {
             ),
           ),
         ),
-        const Positioned(
+        Positioned(
           top: 20,
           right: 35,
-          child: StatusChip(status: 'Completed'), // Replace with dynamic status
+          child: StatusChip(status: widget.bookingStatus),
         ),
       ],
     );
   }
 }
 
-class StatusChip extends StatelessWidget {
-  const StatusChip({super.key, required this.status});
-
-  final String status;
-
-  @override
-  Widget build(BuildContext context) {
-    Color chipColor;
-    switch (status) {
-      case 'Assigned':
-        chipColor = Colors.blue;
-        break;
-      case 'Pending':
-        chipColor = Colors.orange;
-        break;
-      case 'Completed':
-        chipColor = Colors.green;
-        break;
-      default:
-        chipColor = Colors.grey;
-    }
-
-    return Chip(
-      label: Text(
-      status,
-      style: const TextStyle(color: Colors.white),
-      ),
-      backgroundColor: chipColor,
-      shape: RoundedRectangleBorder(
-      side: BorderSide(color: chipColor),
-      borderRadius: BorderRadius.circular(15),
-      ),
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-    );
-  }
-}
