@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hcms/screens/auth/login.dart';
 import 'package:hcms/screens/booking/edit_booking.dart';
 import 'package:moon_design/moon_design.dart';
 
@@ -164,7 +165,7 @@ class Checkout extends StatelessWidget {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => EditBookingScreen(),
+                            builder: (context) => (LoginView()),
                           ),
                         );
                       },
