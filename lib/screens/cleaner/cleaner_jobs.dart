@@ -3,8 +3,7 @@ import 'package:hcms/screens/booking/add_booking.dart';
 import 'package:hcms/screens/booking/booking_details.dart';
 import 'package:hcms/screens/booking/widgets/filters_dropdown.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
-import 'widgets/status_chip.dart';
+import 'package:moon_design/moon_design.dart';
 
 Widget _buildHeader() {
   return Column(
@@ -13,7 +12,7 @@ Widget _buildHeader() {
       Padding(
         padding: EdgeInsets.only(left: 25, right: 25, top: 40, bottom: 25),
         child: Row(
-            children: [
+          children: [
             Text(
               'Hi, Khairul ',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -24,13 +23,13 @@ Widget _buildHeader() {
               height: 24,
               width: 24,
             ),
-            ],
+          ],
         ),
       ),
       Padding(
         padding: EdgeInsets.symmetric(horizontal: 25),
         child: Text(
-          'My Bookings',
+          'Cleaner Jobs',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),
@@ -38,94 +37,110 @@ Widget _buildHeader() {
   );
 }
 
-class BookingList extends StatelessWidget {
-  const BookingList({Key? key}) : super(key: key);
+class SegmentedControl extends StatelessWidget {
+  const SegmentedControl({super.key});
 
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: MoonSegmentedControl(
+        segmentedControlSize: MoonSegmentedControlSize.sm,
+
+        isExpanded: true,
+        segments: List.generate(
+          3,
+          (int index) {
+            switch (index) {
+              case 0:
+                return const Segment(
+                  label: Flexible(child: Text('Available')),
+                );
+              case 1:
+                return const Segment(
+                  label: Flexible(child: Text('Ongoing')),
+                );
+              case 2:
+                return const Segment(
+                  label: Flexible(child: Text('Completed')),
+                );
+              default:
+                return Segment(
+                  label: Text('Tab${index + 1}'),
+                );
+            }
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class CleanerJobs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
         children: [
           _buildHeader(),
-          // Filters Section
-          Container(
-            margin:
-                const EdgeInsets.only(top: 20, bottom: 7, left: 25, right: 25),
-            child: const Dropdown(),
-          ),
-          // Booking List Section
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('bookings')
-                  .where('owner_id', isEqualTo: 'owneridtest')
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text('You have not made any bookings.'));
-                }
-                final bookings = snapshot.data!.docs;  
-                return ListView.builder(
-                  itemCount: bookings.length,
-                  itemBuilder: (context, index) {
-                    final booking = bookings[index];
-                    return BookingCard(
-                      bookingId: booking.id,
-                      houseId: booking['house_id'].id,
-                      cleanerId: booking['cleaner_id'],
-                      bookingDateTime: (booking['booking_datetime'] as Timestamp).toDate().toString(),
-                      bookingStatus: booking['booking_status'],
-                      bookingTotalCost: booking['booking_total_cost'],
-                    );
-                  },
-                );
-              },
+            const SizedBox(height: 10),
+            Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(child: const SegmentedControl()),
+            ],
             ),
-          ),
+            const SizedBox(height: 10),
+            Expanded(
+            child: ListView(
+              children: [
+              JobCard(
+                jobId: 'job1',
+                houseId: 'house1',
+                jobDateTime: '2023-10-01 14:00:00',
+                jobTotalCost: 150.00,
+              ),
+              JobCard(
+                jobId: 'job2',
+                houseId: 'house2',
+                jobDateTime: '2023-10-02 10:00:00',
+                jobTotalCost: 200.00,
+              ),
+              JobCard(
+                jobId: 'job3',
+                houseId: 'house3',
+                jobDateTime: '2023-10-03 16:00:00',
+                jobTotalCost: 180.00,
+              ),
+              ],
+            ),
+            ),
+          // Add more widgets here
         ],
-      ),
-      // Bottom Navigation Bar
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.deepPurpleAccent,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddBookingScreen()),
-          );
-        },
-        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 }
 
-class BookingCard extends StatefulWidget {
-  final String bookingId;
+class JobCard extends StatefulWidget {
+  final String jobId;
   final String houseId;
-  final String cleanerId;
-  final String bookingDateTime;
-  final String bookingStatus;
-  final double bookingTotalCost;
+  final String jobDateTime;
+  final double jobTotalCost;
 
-  const BookingCard({
+  const JobCard({
     super.key,
-    required this.bookingId,
+    required this.jobId,
     required this.houseId,
-    required this.cleanerId,
-    required this.bookingDateTime,
-    required this.bookingStatus,
-    required this.bookingTotalCost,
+    required this.jobDateTime,
+    required this.jobTotalCost,
   });
 
   @override
-  // ignore: library_private_types_in_public_api
-  _BookingCardState createState() => _BookingCardState();
+  _JobCardState createState() => _JobCardState();
 }
 
-class _BookingCardState extends State<BookingCard> {
+class _JobCardState extends State<JobCard> {
   String houseName = '';
   String houseImage = '';
   String houseAddress = '';
@@ -155,7 +170,7 @@ class _BookingCardState extends State<BookingCard> {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => BookingDetails(
-                bookingId: widget.bookingId,
+                bookingId: widget.jobId,
                 )),
             );
           },
@@ -180,7 +195,7 @@ class _BookingCardState extends State<BookingCard> {
                     image: DecorationImage(
                         image: houseImage.isNotEmpty
                           ? NetworkImage(houseImage)
-                          : const AssetImage('assets/placeholder.png') as ImageProvider,
+                          : const NetworkImage('https://cf.bstatic.com/xdata/images/hotel/max1024x768/518552029.jpg?k=9bd75fdc98262a98c60e10c80a56781bea4bcbca0b617b22315e4c58ae61a2bf&o=&hp=1') as ImageProvider,
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -191,31 +206,31 @@ class _BookingCardState extends State<BookingCard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        houseName,
+                        'My Villa',
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 6),
-                      Row(
+                        Row(
                         children: [
-                          const Icon(Icons.event, size: 16, color: Colors.grey),
+                          const Icon(MoonIcons.time_calendar_date_32_regular, size: 24, color: Colors.grey),
                           const SizedBox(width: 4),
-                            Text(
-                            '${widget.bookingDateTime.split(' ')[0].split('-')[2]}/${widget.bookingDateTime.split(' ')[0].split('-')[1]}/${widget.bookingDateTime.split(' ')[0].split('-')[0]}',
-                            style: TextStyle(color: Colors.grey[700]),
-                            ),
+                          Text(
+                          '${widget.jobDateTime.split(' ')[0].split('-')[2]}/${widget.jobDateTime.split(' ')[0].split('-')[1]}/${widget.jobDateTime.split(' ')[0].split('-')[0]} ${widget.jobDateTime.split(' ')[1].substring(0, 5)} ${int.parse(widget.jobDateTime.split(' ')[1].substring(0, 2)) >= 12 ? 'PM' : 'AM'}',
+                          style: TextStyle(color: Colors.grey[700]),
+                          ),
                         ],
-                      ),
+                        ),
                       const SizedBox(height: 6),
                       Row(
                         children: [
-                          const Icon(Icons.schedule,
-                              size: 16, color: Colors.grey),
+                          const Icon(MoonIcons.travel_bed_32_regular,
+                              size: 24, color: Colors.grey),
                           const SizedBox(width: 4),
                           Text(
-                            '${widget.bookingDateTime.split(' ')[1].substring(0, 5)} ${int.parse(widget.bookingDateTime.split(' ')[1].substring(0, 2)) >= 12 ? 'PM' : 'AM'}',
+                            '3 Bedrooms 2 Bathrooms',
                             style: TextStyle(color: Colors.grey[700]),
                           ),
                         ],
@@ -223,22 +238,22 @@ class _BookingCardState extends State<BookingCard> {
                       const SizedBox(height: 6),
                       Row(
                         children: [
-                          const Icon(Icons.payments, size: 16, color: Colors.grey),
-                          const SizedBox(width: 4),
+                          const Icon(Icons.payments, size: 20, color: Colors.grey),
+                          const SizedBox(width: 6),
                           Text(
-                            'RM ${widget.bookingTotalCost.toStringAsFixed(2)}',
+                            'RM 25/hr',
                             style: TextStyle(color: Colors.grey[700]),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 10),
                       Row(
                         children: [
-                          const Icon(Icons.face, size: 16, color: Colors.grey),
+                          const Icon(MoonIcons.generic_info_32_light, size: 24, color: Colors.grey),
                           const SizedBox(width: 4),
                           Text(
-                            widget.cleanerId == 'N/A' ? 'No cleaner assigned yet' : 'Cleaner assigned',
-                            style: TextStyle(color: Colors.grey[700]),
+                            'Job Available',
+                            style: TextStyle(color: Colors.blue[700]),
                           ),
                         ],
                       ),
@@ -249,13 +264,7 @@ class _BookingCardState extends State<BookingCard> {
             ),
           ),
         ),
-        Positioned(
-          top: 20,
-          right: 35,
-          child: StatusChip(status: widget.bookingStatus),
-        ),
       ],
     );
   }
 }
-
