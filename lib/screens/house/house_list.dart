@@ -12,6 +12,7 @@ class _HouseListScreenState extends State<HouseListScreen> {
   List<Map<String, dynamic>> houses = [
     {
       'image': 'assets/house1.jpg',
+      'name': 'Luxury House',
       'address': '123 Main Street, KL',
       'rooms': '4 Rooms',
       'size': '1500 sq ft',
@@ -19,6 +20,7 @@ class _HouseListScreenState extends State<HouseListScreen> {
     },
     {
       'image': 'assets/house2.jpg',
+      'name': 'Modern Villa',
       'address': '456 Elm Avenue, Penang',
       'rooms': '3 Rooms',
       'size': '1200 sq ft',
@@ -26,6 +28,7 @@ class _HouseListScreenState extends State<HouseListScreen> {
     },
     {
       'image': 'assets/house3.jpg',
+      'name': 'Family Home',
       'address': '789 Oak Lane, JB',
       'rooms': '5 Rooms',
       'size': '1800 sq ft',
@@ -36,13 +39,28 @@ class _HouseListScreenState extends State<HouseListScreen> {
   // Function to add a new house
   void _addNewHouse(Map<String, dynamic> newHouse) {
     setState(() {
-      houses.add(newHouse); // Add new house to the list
+      houses.add(newHouse);
+    });
+  }
+
+  // Function to update an existing house
+  void _updateHouse(int index, Map<String, dynamic> updatedHouse) {
+    setState(() {
+      houses[index] = updatedHouse;
+    });
+  }
+
+  // Function to delete a house
+  void _deleteHouse(int index) {
+    setState(() {
+      houses.removeAt(index);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // App Bar
       appBar: AppBar(
         title: Text('House List', style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
@@ -51,14 +69,18 @@ class _HouseListScreenState extends State<HouseListScreen> {
           IconButton(
             icon: Icon(Icons.filter_list, color: Colors.black),
             onPressed: () {
-              // Add filter logic here
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Filter feature not implemented yet!')),
+              );
             },
           ),
         ],
       ),
+
+      // Body Section
       body: Column(
         children: [
-          // Search bar
+          // Search Bar
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
@@ -74,6 +96,7 @@ class _HouseListScreenState extends State<HouseListScreen> {
               ),
             ),
           ),
+
           // House List
           Expanded(
             child: ListView.builder(
@@ -85,15 +108,21 @@ class _HouseListScreenState extends State<HouseListScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: ListTile(
-                    onTap: () {
-                      // Navigate to House Details
-                      Navigator.push(
+                    onTap: () async {
+                      // Navigate to House Details Screen
+                      final updatedHouse = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              HouseDetailsScreen(house: houses[index]),
+                          builder: (context) => HouseDetailsScreen(
+                            house: houses[index],
+                          ),
                         ),
                       );
+
+                      // If updated house data is returned, update the list
+                      if (updatedHouse != null) {
+                        _updateHouse(index, updatedHouse);
+                      }
                     },
                     leading: Image.asset(
                       houses[index]['image'],
@@ -101,14 +130,17 @@ class _HouseListScreenState extends State<HouseListScreen> {
                       height: 70,
                       fit: BoxFit.cover,
                     ),
-                    title: Text(houses[index]['address']),
-                    subtitle: Text(houses[index]['rooms']),
+                    title: Text(
+                      houses[index]['name'],
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      '${houses[index]['rooms']} - ${houses[index]['size']}',
+                    ),
                     trailing: IconButton(
                       icon: Icon(Icons.delete, color: Colors.red),
                       onPressed: () {
-                        setState(() {
-                          houses.removeAt(index); // Delete house
-                        });
+                        _deleteHouse(index);
                       },
                     ),
                   ),
@@ -118,6 +150,8 @@ class _HouseListScreenState extends State<HouseListScreen> {
           ),
         ],
       ),
+
+      // Floating Action Button to Add House
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           // Navigate to Add House Screen
@@ -133,31 +167,6 @@ class _HouseListScreenState extends State<HouseListScreen> {
         },
         child: Icon(Icons.add),
         backgroundColor: Colors.blue,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        showSelectedLabels: true,
-        showUnselectedLabels: true,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'House',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book_online),
-            label: 'Booking',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.report),
-            label: 'Reports',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
       ),
     );
   }
