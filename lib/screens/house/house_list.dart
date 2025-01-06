@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'house_details.dart';
+import 'add_house.dart';
 
-class HouseListScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> houses = [
+class HouseListScreen extends StatefulWidget {
+  @override
+  _HouseListScreenState createState() => _HouseListScreenState();
+}
+
+class _HouseListScreenState extends State<HouseListScreen> {
+  // Initial list of houses
+  List<Map<String, dynamic>> houses = [
     {
       'image': 'assets/house1.jpg',
       'address': '123 Main Street, KL',
@@ -26,18 +33,25 @@ class HouseListScreen extends StatelessWidget {
     },
   ];
 
+  // Function to add a new house
+  void _addNewHouse(Map<String, dynamic> newHouse) {
+    setState(() {
+      houses.add(newHouse); // Add new house to the list
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Hello, Khairul', style: TextStyle(color: Colors.black)),
+        title: Text('House List', style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
             icon: Icon(Icons.filter_list, color: Colors.black),
             onPressed: () {
-              // Filter logic here
+              // Add filter logic here
             },
           ),
         ],
@@ -89,18 +103,13 @@ class HouseListScreen extends StatelessWidget {
                     ),
                     title: Text(houses[index]['address']),
                     subtitle: Text(houses[index]['rooms']),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () {},
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.delete, color: Colors.red),
-                          onPressed: () {},
-                        ),
-                      ],
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {
+                        setState(() {
+                          houses.removeAt(index); // Delete house
+                        });
+                      },
                     ),
                   ),
                 );
@@ -110,7 +119,18 @@ class HouseListScreen extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () async {
+          // Navigate to Add House Screen
+          final newHouse = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddHouseScreen()),
+          );
+
+          // If a new house is returned, add it to the list
+          if (newHouse != null) {
+            _addNewHouse(newHouse);
+          }
+        },
         child: Icon(Icons.add),
         backgroundColor: Colors.blue,
       ),
@@ -118,6 +138,8 @@ class HouseListScreen extends StatelessWidget {
         currentIndex: 0,
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
+        showSelectedLabels: true,
+        showUnselectedLabels: true,
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),

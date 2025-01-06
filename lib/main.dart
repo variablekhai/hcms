@@ -1,5 +1,8 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
+import 'package:hcms/screens/house/add_house.dart';
+import 'package:hcms/screens/house/house_details.dart';
+import 'package:hcms/screens/house/house_list.dart';
 import 'package:provider/provider.dart';
 import 'controllers/user_controller.dart';
 import 'screens/user_view.dart';
@@ -26,7 +29,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const RegisterPage(),
+      home: HouseListScreen(),
     );
   }
 }
