@@ -26,7 +26,7 @@ class HouseListScreen extends StatelessWidget {
     },
   ];
 
-  HouseListScreen({super.key});
+ HouseListScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

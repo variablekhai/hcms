@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../controllers/user_controller.dart';
 
 class UserView extends StatefulWidget {
-  const UserView({Key? key}): super(key: key);
+  const UserView({Key? key}) : super(key: key);
 
   @override
   _UserViewState createState() => _UserViewState();
@@ -21,7 +21,7 @@ class _UserViewState extends State<UserView> {
     });
   }
 
- @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Users')),
