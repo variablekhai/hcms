@@ -1,9 +1,39 @@
 import 'package:flutter/material.dart';
+import 'edit_house.dart';
 
-class HouseDetailsScreen extends StatelessWidget {
+class HouseDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> house;
 
   HouseDetailsScreen({required this.house});
+
+  @override
+  _HouseDetailsScreenState createState() => _HouseDetailsScreenState();
+}
+
+class _HouseDetailsScreenState extends State<HouseDetailsScreen> {
+  late Map<String, dynamic> house;
+
+  @override
+  void initState() {
+    super.initState();
+    house = widget.house; // Initialize with the passed house data
+  }
+
+  void _editHouse() async {
+    // Navigate to the EditHouseScreen and wait for updated house data
+    final updatedHouse = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditHouseScreen(house: house),
+      ),
+    );
+
+    if (updatedHouse != null) {
+      setState(() {
+        house = updatedHouse; // Update house details
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,11 +103,7 @@ class HouseDetailsScreen extends StatelessWidget {
               children: [
                 IconButton(
                   icon: Icon(Icons.edit, color: Colors.blue),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Edit button tapped')),
-                    );
-                  },
+                  onPressed: _editHouse, // Navigate to EditHouseScreen
                 ),
                 IconButton(
                   icon: Icon(Icons.delete, color: Colors.red),

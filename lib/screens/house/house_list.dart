@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'house_details.dart';
+import 'add_house.dart';
 
-class HouseListScreen extends StatelessWidget {
-  final List<Map<String, dynamic>> houses = [
+class HouseListScreen extends StatefulWidget {
+  @override
+  _HouseListScreenState createState() => _HouseListScreenState();
+}
+
+class _HouseListScreenState extends State<HouseListScreen> {
+  // Initial list of houses
+  List<Map<String, dynamic>> houses = [
     {
       'image': 'assets/house1.jpg',
+      'name': 'Luxury House',
       'address': '123 Main Street, KL',
       'rooms': '4 Rooms',
       'size': '1500 sq ft',
@@ -12,6 +20,7 @@ class HouseListScreen extends StatelessWidget {
     },
     {
       'image': 'assets/house2.jpg',
+      'name': 'Modern Villa',
       'address': '456 Elm Avenue, Penang',
       'rooms': '3 Rooms',
       'size': '1200 sq ft',
@@ -19,6 +28,7 @@ class HouseListScreen extends StatelessWidget {
     },
     {
       'image': 'assets/house3.jpg',
+      'name': 'Family Home',
       'address': '789 Oak Lane, JB',
       'rooms': '5 Rooms',
       'size': '1800 sq ft',
@@ -26,27 +36,51 @@ class HouseListScreen extends StatelessWidget {
     },
   ];
 
- HouseListScreen({super.key});
+  // Function to add a new house
+  void _addNewHouse(Map<String, dynamic> newHouse) {
+    setState(() {
+      houses.add(newHouse);
+    });
+  }
+
+  // Function to update an existing house
+  void _updateHouse(int index, Map<String, dynamic> updatedHouse) {
+    setState(() {
+      houses[index] = updatedHouse;
+    });
+  }
+
+  // Function to delete a house
+  void _deleteHouse(int index) {
+    setState(() {
+      houses.removeAt(index);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // App Bar
       appBar: AppBar(
-        title: Text('Hello, Khairul', style: TextStyle(color: Colors.black)),
+        title: Text('House List', style: TextStyle(color: Colors.black)),
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
           IconButton(
             icon: Icon(Icons.filter_list, color: Colors.black),
             onPressed: () {
-              // Filter logic here
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Filter feature not implemented yet!')),
+              );
             },
           ),
         ],
       ),
+
+      // Body Section
       body: Column(
         children: [
-          // Search bar
+          // Search Bar
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
@@ -62,6 +96,7 @@ class HouseListScreen extends StatelessWidget {
               ),
             ),
           ),
+
           // House List
           Expanded(
             child: ListView.builder(
@@ -73,15 +108,21 @@ class HouseListScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: ListTile(
-                    onTap: () {
-                      // Navigate to House Details
-                      Navigator.push(
+                    onTap: () async {
+                      // Navigate to House Details Screen
+                      final updatedHouse = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              HouseDetailsScreen(house: houses[index]),
+                          builder: (context) => HouseDetailsScreen(
+                            house: houses[index],
+                          ),
                         ),
                       );
+
+                      // If updated house data is returned, update the list
+                      if (updatedHouse != null) {
+                        _updateHouse(index, updatedHouse);
+                      }
                     },
                     leading: Image.asset(
                       houses[index]['image'],
@@ -89,20 +130,18 @@ class HouseListScreen extends StatelessWidget {
                       height: 70,
                       fit: BoxFit.cover,
                     ),
-                    title: Text(houses[index]['address']),
-                    subtitle: Text(houses[index]['rooms']),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.edit, color: Colors.blue),
-                          onPressed: () {},
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.delete, color: Colors.red),
-                          onPressed: () {},
-                        ),
-                      ],
+                    title: Text(
+                      houses[index]['name'],
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      '${houses[index]['rooms']} - ${houses[index]['size']}',
+                    ),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {
+                        _deleteHouse(index);
+                      },
                     ),
                   ),
                 );
@@ -111,33 +150,23 @@ class HouseListScreen extends StatelessWidget {
           ),
         ],
       ),
+
+      // Floating Action Button to Add House
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () async {
+          // Navigate to Add House Screen
+          final newHouse = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddHouseScreen()),
+          );
+
+          // If a new house is returned, add it to the list
+          if (newHouse != null) {
+            _addNewHouse(newHouse);
+          }
+        },
         child: Icon(Icons.add),
         backgroundColor: Colors.blue,
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'House',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book_online),
-            label: 'Booking',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.report),
-            label: 'Reports',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
       ),
     );
   }
