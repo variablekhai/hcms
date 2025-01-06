@@ -43,3 +43,6 @@ app.*.map.json
 /android/app/release
 android/gradle.properties
 .vscode/settings.json
+.env
+.vscode/
+.env
