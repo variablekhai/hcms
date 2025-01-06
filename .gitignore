@@ -45,3 +45,4 @@ android/gradle.properties
 .vscode/settings.json
 .env
 .vscode/
+.env

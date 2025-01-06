@@ -6,6 +6,7 @@ import 'package:hcms/screens/booking/add_booking.dart';
 import 'package:hcms/screens/booking/booking_details.dart';
 import 'package:hcms/screens/booking/booking_list.dart';
 import 'package:hcms/screens/booking/edit_booking.dart';
+import 'package:hcms/widgets/bottomNavigationMenu.dart';
 import 'package:moon_design/moon_design.dart';
 import 'package:provider/provider.dart';
 import 'controllers/user_controller.dart';
@@ -44,7 +45,7 @@ class MyApp extends StatelessWidget {
           MoonTheme(tokens: MoonTokens.light)
         ]
       ),
-      home: BookingList(),
+      home: BottomNavigationMenu(),
         );
   }
 }
