@@ -1,6 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'house_details.dart';
 import 'add_house.dart';
+
+Widget _buildHeader() {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: EdgeInsets.only(left: 25, right: 25, top: 40, bottom: 25),
+        child: Row(
+          children: [
+            Text(
+              'Hi, Sandhiya ',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(width: 5),
+            Image.asset(
+              'wave.png',
+              height: 24,
+              width: 24,
+            ),
+          ],
+        ),
+      ),
+      Padding(
+        padding: EdgeInsets.symmetric(horizontal: 25),
+        child: Text(
+          'My Houses',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+      ),
+    ],
+  );
+}
 
 class HouseListScreen extends StatefulWidget {
   @override
@@ -8,87 +41,21 @@ class HouseListScreen extends StatefulWidget {
 }
 
 class _HouseListScreenState extends State<HouseListScreen> {
-  // Initial list of houses
-  List<Map<String, dynamic>> houses = [
-    {
-      'image': 'assets/house1.jpg',
-      'name': 'Luxury House',
-      'address': '123 Main Street, KL',
-      'rooms': '4 Rooms',
-      'size': '1500 sq ft',
-      'notes': 'Spacious house with amenities.',
-    },
-    {
-      'image': 'assets/house2.jpg',
-      'name': 'Modern Villa',
-      'address': '456 Elm Avenue, Penang',
-      'rooms': '3 Rooms',
-      'size': '1200 sq ft',
-      'notes': 'Modern house with garden.',
-    },
-    {
-      'image': 'assets/house3.jpg',
-      'name': 'Family Home',
-      'address': '789 Oak Lane, JB',
-      'rooms': '5 Rooms',
-      'size': '1800 sq ft',
-      'notes': 'Luxury villa with pool.',
-    },
-  ];
-
-  // Function to add a new house
-  void _addNewHouse(Map<String, dynamic> newHouse) {
-    setState(() {
-      houses.add(newHouse);
-    });
-  }
-
-  // Function to update an existing house
-  void _updateHouse(int index, Map<String, dynamic> updatedHouse) {
-    setState(() {
-      houses[index] = updatedHouse;
-    });
-  }
-
-  // Function to delete a house
-  void _deleteHouse(int index) {
-    setState(() {
-      houses.removeAt(index);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // App Bar
-      appBar: AppBar(
-        title: Text('House List', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.filter_list, color: Colors.black),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Filter feature not implemented yet!')),
-              );
-            },
-          ),
-        ],
-      ),
-
-      // Body Section
       body: Column(
         children: [
-          // Search Bar
+          _buildHeader(),
+          const SizedBox(height: 20),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 8),
             child: TextField(
               decoration: InputDecoration(
                 hintText: 'Search houses...',
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
+                  borderRadius: BorderRadius.circular(100),
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
@@ -96,77 +63,146 @@ class _HouseListScreenState extends State<HouseListScreen> {
               ),
             ),
           ),
-
-          // House List
           Expanded(
-            child: ListView.builder(
-              itemCount: houses.length,
-              itemBuilder: (context, index) {
-                return Card(
-                  margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: ListTile(
-                    onTap: () async {
-                      // Navigate to House Details Screen
-                      final updatedHouse = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => HouseDetailsScreen(
-                            house: houses[index],
-                          ),
-                        ),
-                      );
-
-                      // If updated house data is returned, update the list
-                      if (updatedHouse != null) {
-                        _updateHouse(index, updatedHouse);
-                      }
-                    },
-                    leading: Image.asset(
-                      houses[index]['image'],
-                      width: 70,
-                      height: 70,
-                      fit: BoxFit.cover,
-                    ),
-                    title: Text(
-                      houses[index]['name'],
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      '${houses[index]['rooms']} - ${houses[index]['size']}',
-                    ),
-                    trailing: IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red),
-                      onPressed: () {
-                        _deleteHouse(index);
-                      },
-                    ),
-                  ),
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('houses').snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                }
+                final houses = snapshot.data!.docs.map((doc) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  data['id'] = doc.id;
+                  return data;
+                }).toList();
+                return ListView.builder(
+                  itemCount: houses.length,
+                  itemBuilder: (context, index) {
+                    return HouseCard(
+                      house: houses[index],
+                    );
+                  },
                 );
               },
             ),
           ),
         ],
       ),
-
-      // Floating Action Button to Add House
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
-          // Navigate to Add House Screen
           final newHouse = await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => AddHouseScreen()),
           );
 
-          // If a new house is returned, add it to the list
           if (newHouse != null) {
-            _addNewHouse(newHouse);
+            FirebaseFirestore.instance.collection('houses').add(newHouse);
           }
         },
         child: Icon(Icons.add),
         backgroundColor: Colors.blue,
+      ),
+    );
+  }
+}
+
+class HouseCard extends StatelessWidget {
+  final Map<String, dynamic> house;
+
+  const HouseCard({
+    super.key,
+    required this.house,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        final updatedHouse = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HouseDetailsScreen(
+              houseId: house['id'],
+            ),
+          ),
+        );
+      },
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 25, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        elevation: 3,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 220,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
+                ),
+                image: DecorationImage(
+                  image: NetworkImage(house['house_picture']),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    house['house_name'],
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(Icons.location_on, color: Colors.grey[700]),
+                      const SizedBox(width: 4),
+                      Text(
+                        house['house_address'],
+                        style: TextStyle(color: Colors.grey[700]),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(Icons.king_bed, color: Colors.grey[700]),
+                      const SizedBox(width: 4),
+                      Text(
+                        house['house_no_of_rooms'],
+                        style: TextStyle(color: Colors.grey[700]),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(Icons.square_foot, color: Colors.grey[700]),
+                      const SizedBox(width: 4),
+                      Text(
+                        house['house_size'],
+                        style: TextStyle(color: Colors.grey[700]),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

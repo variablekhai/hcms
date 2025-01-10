@@ -1,143 +1,299 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hcms/screens/booking/add_booking.dart';
+import 'package:moon_design/moon_design.dart';
 import 'edit_house.dart';
 
 class HouseDetailsScreen extends StatefulWidget {
-  final Map<String, dynamic> house;
+  final String houseId;
 
-  HouseDetailsScreen({required this.house});
+  HouseDetailsScreen({required this.houseId});
 
   @override
   _HouseDetailsScreenState createState() => _HouseDetailsScreenState();
 }
 
 class _HouseDetailsScreenState extends State<HouseDetailsScreen> {
-  late Map<String, dynamic> house;
+  late DocumentReference houseRef;
 
   @override
   void initState() {
     super.initState();
-    house = widget.house; // Initialize with the passed house data
+    houseRef =
+        FirebaseFirestore.instance.collection('houses').doc(widget.houseId);
   }
 
-  void _editHouse() async {
-    // Navigate to the EditHouseScreen and wait for updated house data
+  void _editHouse(Map<String, dynamic> houseData) async {
     final updatedHouse = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EditHouseScreen(house: house),
+        builder: (context) => EditHouseScreen(houseData: houseData),
       ),
     );
 
     if (updatedHouse != null) {
       setState(() {
-        house = updatedHouse; // Update house details
+        houseRef =
+            FirebaseFirestore.instance.collection('houses').doc(widget.houseId);
       });
     }
+  }
+
+  void _deleteHouse() {
+    showMoonModal<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return MoonModal(
+          child: SizedBox(
+            height: 150,
+            width: MediaQuery.of(context).size.width - 64,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text("Are you sure you want to delete this house?"),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: MoonFilledButton(
+                          label: const Text("Yes"),
+                          onTap: () async {
+                            await houseRef.delete();
+
+                            MoonToast.show(
+                              context,
+                              backgroundColor: Colors.green[50],
+                              leading: Icon(
+                                MoonIcons.time_calendar_success_24_regular,
+                                color: Colors.green[700],
+                              ),
+                              label: Text(
+                                'House successfully deleted',
+                                style: TextStyle(color: Colors.green[700]),
+                              ),
+                            );
+                            Navigator.of(context).pop();
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: MoonOutlinedButton(
+                          label: const Text("No"),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        title: Text('House Details', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // House Image
-          SizedBox(
-            height: 200,
-            child: PageView.builder(
-              itemCount: 1,
-              itemBuilder: (context, index) {
-                return Container(
-                  margin: EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    image: DecorationImage(
-                      image: AssetImage(house['image']),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          SizedBox(height: 20),
-          // House Details
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: houseRef.snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return const Center(child: Text('House not found'));
+          }
+
+          var houseData = snapshot.data!.data() as Map<String, dynamic>;
+          houseData['id'] = widget.houseId;
+
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  house['address'],
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    const Text(
+                      'Back',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 10),
-                Text('Size: ${house['size']}'),
-                SizedBox(height: 5),
-                Text('Number of Rooms: ${house['rooms']}'),
-                SizedBox(height: 5),
-                Text(
-                  'Special Notes: ${house['notes']}',
-                  style: TextStyle(color: Colors.grey[600]),
+                const SizedBox(height: 16),
+                const Text(
+                  'House Details',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 3,
+                  child: Stack(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            height: 200,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey.shade400),
+                              borderRadius: BorderRadius.circular(8),
+                              color: Colors.grey.shade200,
+                              image: DecorationImage(
+                                image: houseData['house_picture'].isNotEmpty
+                                    ? NetworkImage(houseData['house_picture'])
+                                    : const AssetImage('assets/placeholder.png')
+                                        as ImageProvider,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.home, color: Colors.grey),
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        'House Name: ${houseData['house_name']}',
+                                        style: const TextStyle(
+                                            fontSize: 16, color: Colors.black),
+                                        overflow: TextOverflow.clip,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.location_pin,
+                                        color: Colors.grey),
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        'Address: ${houseData['house_address']}',
+                                        style: const TextStyle(
+                                            fontSize: 16, color: Colors.black),
+                                        overflow: TextOverflow.clip,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.square_foot,
+                                        color: Colors.grey),
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        'Size: ${houseData['house_size']}',
+                                        style: const TextStyle(
+                                            fontSize: 16, color: Colors.black),
+                                        overflow: TextOverflow.clip,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.meeting_room,
+                                        color: Colors.grey),
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        'Number of Rooms: ${houseData['house_no_of_rooms']}',
+                                        style: const TextStyle(
+                                            fontSize: 16, color: Colors.black),
+                                        overflow: TextOverflow.clip,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: Row(
+                          children: [
+                            FloatingActionButton(
+                              mini: true,
+                              onPressed: () => _editHouse(houseData),
+                              child: const Icon(Icons.edit),
+                            ),
+                            const SizedBox(width: 4),
+                            FloatingActionButton(
+                              mini: true,
+                              onPressed: _deleteHouse,
+                              child: const Icon(Icons.delete),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                  Expanded(
+                    child: MoonFilledButton(
+                    buttonSize: MoonButtonSize.lg,
+                    onTap: () {
+                      Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddBookingScreen(houseId: widget.houseId),
+                      ),
+                      );
+                    },
+                    label: const Text("Book a Cleaner"),
+                    ),
+                  ),
+                  ],
                 ),
               ],
             ),
-          ),
-          SizedBox(height: 20),
-          // Buttons
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.edit, color: Colors.blue),
-                  onPressed: _editHouse, // Navigate to EditHouseScreen
-                ),
-                IconButton(
-                  icon: Icon(Icons.delete, color: Colors.red),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Delete button tapped')),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-          // "Book a Cleaner" Button
-          Center(
-            child: ElevatedButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Book a Cleaner button tapped')),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: Text(
-                'Book a Cleaner',
-                style: TextStyle(fontSize: 16, color: Colors.white),
-              ),
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

@@ -1,175 +1,263 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:moon_design/moon_design.dart';
 
 class AddHouseScreen extends StatefulWidget {
+  const AddHouseScreen({super.key});
+
   @override
   _AddHouseScreenState createState() => _AddHouseScreenState();
 }
 
 class _AddHouseScreenState extends State<AddHouseScreen> {
-  // Controllers for input fields
   final TextEditingController _houseNameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _sizeController = TextEditingController();
   final TextEditingController _roomsController = TextEditingController();
-  final TextEditingController _notesController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  // Image placeholder (URL or local file)
-  String? _imagePath;
+  Uint8List? _imagePath;
+  String? _imageUrl;
+  bool _isUploading = false;
 
-  // Function to simulate image upload
-  void _uploadImage() {
-    setState(() {
-      _imagePath =
-          'assets/house_placeholder.jpg'; // Replace with actual upload logic
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Image Uploaded Successfully!')),
-    );
+  Future<void> _uploadImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+
+      setState(() {
+        _imagePath = bytes;
+        _isUploading = true;
+      });
+
+      try {
+        final storageRef = FirebaseStorage.instance
+            .ref()
+            .child('house_images/${DateTime.now().millisecondsSinceEpoch}.jpg');
+        final uploadTask = storageRef.putData(bytes);
+        final snapshot = await uploadTask.whenComplete(() => {});
+        final downloadUrl = await snapshot.ref.getDownloadURL();
+
+        setState(() {
+          _imageUrl = downloadUrl.replaceFirst('download', 'view');
+          _isUploading = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Image Uploaded Successfully!')),
+        );
+      } catch (e) {
+        setState(() {
+          _isUploading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to upload image: $e')),
+        );
+      }
+    }
   }
 
-  // Function to handle form submission
   void _submitForm() {
-    if (_houseNameController.text.isEmpty ||
-        _addressController.text.isEmpty ||
-        _sizeController.text.isEmpty ||
-        _roomsController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill all fields')),
-      );
-    } else {
-      // Create new house object
+    if (_formKey.currentState!.validate()) {
       Map<String, dynamic> newHouse = {
-        'image': _imagePath ?? 'assets/house_placeholder.jpg', // Default image
-        'name': _houseNameController.text,
-        'address': _addressController.text,
-        'size': '${_sizeController.text} sq ft',
-        'rooms': '${_roomsController.text} Rooms',
-        'notes': _notesController.text,
+        'house_picture': _imageUrl ?? 'assets/house_placeholder.jpg',
+        'house_name': _houseNameController.text,
+        'house_address': _addressController.text,
+        'house_size': '${_sizeController.text} sq ft',
+        'house_no_of_rooms': '${_roomsController.text} Rooms',
+        'owner_id': 'owneridtest'
       };
 
-      Navigator.pop(
-          context, newHouse); // Return the new house to previous screen
+      FirebaseFirestore.instance.collection('houses').add(newHouse).then((_) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('House added successfully!')),
+        );
+      }).catchError((error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to add house: $error')),
+        );
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text('Add House', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image Upload Section
-            Container(
-              height: 200,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: _imagePath != null
-                  ? Image.asset(_imagePath!, fit: BoxFit.cover)
-                  : Center(
-                      child: Icon(Icons.image, size: 80, color: Colors.grey)),
-            ),
-            SizedBox(height: 10),
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: _uploadImage,
-                icon: Icon(Icons.upload_file, color: Colors.white),
-                label: Text('Upload Image'),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-              ),
-            ),
-
-            SizedBox(height: 20),
-
-            // Input Fields
-            TextField(
-              controller: _houseNameController,
-              decoration: InputDecoration(
-                labelText: 'House Name',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _addressController,
-              decoration: InputDecoration(
-                labelText: 'Address',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 10),
-            Row(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _sizeController,
-                    decoration: InputDecoration(
-                      labelText: 'Size',
-                      border: OutlineInputBorder(),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
                     ),
+                    const Text(
+                      'Back',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Add House',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
                   ),
                 ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: TextField(
-                    controller: _roomsController,
-                    decoration: InputDecoration(
-                      labelText: 'No. of Rooms',
-                      border: OutlineInputBorder(),
-                    ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Please fill in all details of the house',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
                   ),
+                ),
+                const SizedBox(height: 28),
+                Container(
+                  height: 200,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Stack(
+                    children: [
+                      _imagePath != null
+                          ? Image.memory(
+                              _imagePath!,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                            )
+                          : const Center(
+                              child: Icon(
+                                Icons.image,
+                                size: 80,
+                                color: Colors.grey,
+                              ),
+                            ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    MoonOutlinedButton(
+                      buttonSize: MoonButtonSize.lg,
+                      leading: _isUploading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.black),
+                              ),
+                            )
+                          : const Icon(MoonIcons.generic_upload_32_light),
+                      onTap: _uploadImage,
+                      label: const Text("Upload Image"),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                MoonFormTextInput(
+                  controller: _houseNameController,
+                  validator: (String? value) => value != null && value.isEmpty
+                      ? 'Please enter house name'
+                      : null,
+                  leading: const Icon(Icons.home),
+                  hintText: 'House Name',
+                  textInputSize: MoonTextInputSize.lg,
+                ),
+                const SizedBox(height: 10),
+                MoonFormTextInput(
+                  controller: _addressController,
+                  validator: (String? value) => value != null && value.isEmpty
+                      ? 'Please enter address'
+                      : null,
+                  leading: const Icon(Icons.location_on),
+                  hintText: 'Address',
+                  textInputSize: MoonTextInputSize.lg,
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: MoonFormTextInput(
+                        controller: _sizeController,
+                        validator: (String? value) =>
+                            value != null && value.isEmpty
+                                ? 'Please enter size'
+                                : null,
+                        leading: const Icon(Icons.square_foot),
+                        trailing: const Center(child: Text('sq ft')),
+                        hintText: 'Size',
+                        textInputSize: MoonTextInputSize.lg,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: MoonFormTextInput(
+                        controller: _roomsController,
+                        validator: (String? value) =>
+                            value != null && value.isEmpty
+                                ? 'Please enter number of rooms'
+                                : null,
+                        leading: const Icon(Icons.meeting_room),
+                        hintText: 'No. of Rooms',
+                        textInputSize: MoonTextInputSize.lg,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(
+                      child: MoonOutlinedButton(
+                        buttonSize: MoonButtonSize.lg,
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        },
+                        label: const Text("Cancel"),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: MoonFilledButton(
+                        buttonSize: MoonButtonSize.lg,
+                        onTap: _submitForm,
+                        label: const Text("Add House"),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _notesController,
-              maxLines: 3,
-              decoration: InputDecoration(
-                labelText: 'Special Notes',
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            SizedBox(height: 20),
-
-            // Cancel and Submit Buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context); // Cancel button
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[300],
-                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                  ),
-                  child: Text('Cancel', style: TextStyle(color: Colors.black)),
-                ),
-                ElevatedButton(
-                  onPressed: _submitForm,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                  ),
-                  child: Text('Submit', style: TextStyle(color: Colors.white)),
-                ),
-              ],
-            ),
-          ],
+          ),
         ),
       ),
     );

@@ -50,6 +50,7 @@ class MyApp extends StatelessWidget {
           MoonTheme(tokens: MoonTokens.light)
         ]
       ),
-      home: HouseListScreen(),
+      home: BookingList(),
+    );
   }
 }
