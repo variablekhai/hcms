@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:hcms/controllers/user_controller.dart';
 import 'package:hcms/screens/booking/edit_booking.dart';
 import 'package:hcms/screens/booking/widgets/status_chip.dart';
 import 'package:moon_design/moon_design.dart';
@@ -237,7 +238,7 @@ class BookingDetails extends StatelessWidget {
                                       const SizedBox(width: 8),
                                       Flexible(
                                         child: Text(
-                                          'Cleaner: ${bookingData['cleaner_id'] == 'N/A' ? 'No cleaner assigned yet' : bookingData['cleaner_id']}',
+                                          'Cleaner: ${bookingData['cleaner_id'] == 'N/A' ? 'No cleaner assigned yet' : UserController().getNameById(bookingData['cleaner_id'])}',
                                           style: const TextStyle(
                                               fontSize: 16,
                                               color: Colors.black),

@@ -249,7 +249,7 @@ class JobDetailsScreen extends StatelessWidget {
                                   const SizedBox(width: 8),
                                   Flexible(
                                     child: Text(
-                                      'Cleaner: ${bookingData['cleaner_id'] == 'N/A' ? 'No cleaner assigned yet' : bookingData['cleaner_id']}',
+                                      'Cleaner: ${bookingData['cleaner_id'] == 'N/A' ? 'No cleaner assigned yet' : UserController().getNameById(bookingData['cleaner_id'])}',
                                       style: const TextStyle(
                                           fontSize: 16, color: Colors.black),
                                       overflow: TextOverflow.clip,

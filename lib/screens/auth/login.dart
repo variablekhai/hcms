@@ -5,23 +5,6 @@ import 'package:hcms/screens/booking/booking_list.dart';
 import 'package:hcms/screens/cleaner/cleaner_jobs.dart';
 import 'package:hcms/screens/house/house_list.dart';
 
-final List<Map<String, String>> _dummyUsers = [
-  {
-    'id': 'de6c5e03-1344-4571',
-    'name': 'House Owner 1',
-    'email': 'houseowner@gmail.com',
-    'password': 'house123',
-    'role': 'house_owner',
-  },
-  {
-    'id': 'b3071a3f-b59d-4f27',
-    'name': 'Cleaner 1',
-    'email': 'cleaner@gmail.com',
-    'password': 'cleaner123',
-    'role': 'cleaner',
-  },
-];
-
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
 
@@ -42,7 +25,7 @@ class _LoginViewState extends State<LoginView> {
   bool _isPasswordVisible = false;
 
   Map<String, String>? _authenticateUser(String email, String password) {
-    for (var user in _dummyUsers) {
+    for (var user in UserController().dummyUsers) {
       if (user['email'] == email && user['password'] == password) {
         return {
           'id': user['id']!,
