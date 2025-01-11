@@ -83,6 +83,11 @@ class _HouseListScreenState extends State<HouseListScreen> {
                 if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text('Start by adding a house'));
+                }
+
                 final houses = snapshot.data!.docs.map((doc) {
                   final data = doc.data() as Map<String, dynamic>;
                   data['id'] = doc.id;

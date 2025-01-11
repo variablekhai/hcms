@@ -9,9 +9,23 @@ final List<Map<String, String>> _dummyUsers = [
     'role': 'house_owner',
   },
   {
+    'id': 'de6c5e03-1344-1236',
+    'name': 'House Owner 2',
+    'email': 'houseowner2@gmail.com',
+    'password': 'house123',
+    'role': 'house_owner',
+  },
+  {
     'id': 'b3071a3f-b59d-4f27',
     'name': 'Cleaner 1',
     'email': 'cleaner@gmail.com',
+    'password': 'cleaner123',
+    'role': 'cleaner',
+  },
+  {
+    'id': 'b3071a3f-b59d-asd6',
+    'name': 'Cleaner 2',
+    'email': 'cleaner2@gmail.com',
     'password': 'cleaner123',
     'role': 'cleaner',
   },
