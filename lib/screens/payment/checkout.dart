@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hcms/controllers/payment/payment_controller.dart';
 import 'package:hcms/screens/auth/login.dart';
 import 'package:hcms/screens/booking/edit_booking.dart';
 import 'package:moon_design/moon_design.dart';
@@ -163,11 +164,7 @@ class Checkout extends StatelessWidget {
                     child: MoonFilledButton(
                       buttonSize: MoonButtonSize.lg,
                       onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => (LoginView()),
-                          ),
-                        );
+                        PaymentController.instance.makePayment();
                       },
                       label: const Text("Make Payment"),
                     ),

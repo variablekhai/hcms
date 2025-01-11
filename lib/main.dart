@@ -1,28 +1,19 @@
 // lib/main.dart
-import 'dart:io';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:hcms/screens/auth/login.dart';
-import 'package:hcms/screens/house/add_house.dart';
-import 'package:hcms/screens/house/house_details.dart';
-import 'package:hcms/screens/house/house_list.dart';
 import 'package:hcms/firebase_options.dart';
-import 'package:hcms/screens/booking/add_booking.dart';
-import 'package:hcms/screens/booking/booking_details.dart';
-import 'package:hcms/screens/booking/booking_list.dart';
-import 'package:hcms/screens/booking/edit_booking.dart';
-
-import 'package:hcms/screens/cleaner/cleaner_jobs.dart';
-import 'package:hcms/widgets/bottomNavigationMenu.dart';
 import 'package:moon_design/moon_design.dart';
 import 'package:provider/provider.dart';
 import 'controllers/user_controller.dart';
-import 'screens/user_view.dart';
-import 'screens/auth/register.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 Future<void> main() async {
+  Stripe.publishableKey = 'pk_test_51QBuXtEbdf93ZSBchgoENGapIfl7UuEQhMmOPiAmZ3ILH86kcQu8PpCgBiiFS5cQpYQTM2tzfvBdD70xcEhiX61Y00H3XZLoWb';
+  await dotenv.load(fileName: "assets/.env");
+  
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
