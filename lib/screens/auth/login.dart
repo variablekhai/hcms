@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hcms/controllers/user_controller.dart';
 import 'package:hcms/screens/auth/register.dart';
-import 'package:hcms/screens/booking/booking_list.dart';
 import 'package:hcms/screens/cleaner/cleaner_jobs.dart';
 import 'package:hcms/screens/house/house_list.dart';
 
@@ -206,7 +205,7 @@ class _LoginViewState extends State<LoginView> {
     Navigator.of(context).pushReplacement(MaterialPageRoute(
         builder: (context) =>
             // Determine screen based on user type
-            user?.role! == 'house_owner' ? BookingList() : CleanerJobs()));
+            user?.role! == 'house_owner' ? HouseListScreen() : CleanerJobs()));
   }
 
   void _navigateToRegister() {
