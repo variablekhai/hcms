@@ -28,7 +28,7 @@ class _CleanerJobsState extends State<CleanerJobs> {
               ),
               SizedBox(width: 5),
               Image.asset(
-                'wave.png',
+                'assets/wave.png',
                 height: 24,
                 width: 24,
               ),
