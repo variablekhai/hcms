@@ -1,6 +1,7 @@
 // lib/main.dart
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:hcms/screens/auth/login.dart';
 import 'package:hcms/screens/house/add_house.dart';
 import 'package:hcms/screens/house/house_details.dart';
 import 'package:hcms/screens/house/house_list.dart';
@@ -50,7 +51,7 @@ class MyApp extends StatelessWidget {
           MoonTheme(tokens: MoonTokens.light)
         ]
       ),
-      home: BookingList(),
+      home: LoginView(),
     );
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hcms/screens/auth/register.dart';
+import 'package:hcms/screens/cleaner/cleaner_jobs.dart';
+import 'package:hcms/screens/house/house_list.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
@@ -216,14 +218,15 @@ class _LoginViewState extends State<LoginView> {
   void _navigateToUserScreen() {
     // Placeholder navigation logic
     // In a real app, this would be based on user role from authentication
-    // Navigator.of(context).pushReplacement(
-    //   MaterialPageRoute(builder: (context) => 
-    //     // Determine screen based on user type
-    //     userType == 'houseOwner' 
-    //       ? HouseOwnerDashboard() 
-    //       : CleanerDashboard()
-    //   )
-    // );
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (context) => 
+        // Determine screen based on user type
+        _emailController.text == 'houseowner@gmail.com' 
+          ? HouseListScreen() 
+          : CleanerJobs()
+      )
+    );
+    
     print('Navigating to user-specific screen');
   }
 
