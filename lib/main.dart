@@ -1,4 +1,6 @@
 // lib/main.dart
+import 'dart:io';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hcms/screens/auth/login.dart';
@@ -24,9 +26,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
+    name: 'hcms',
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  
+
   runApp(
     MultiProvider(
       providers: [
@@ -45,12 +48,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter MVC Example',
       theme: ThemeData.light().copyWith(
-        textTheme: GoogleFonts.poppinsTextTheme(
-        ),
-        extensions: <ThemeExtension<dynamic>>[
-          MoonTheme(tokens: MoonTokens.light)
-        ]
-      ),
+          textTheme: GoogleFonts.poppinsTextTheme(),
+          extensions: <ThemeExtension<dynamic>>[
+            MoonTheme(tokens: MoonTokens.light)
+          ]),
       home: LoginView(),
     );
   }
