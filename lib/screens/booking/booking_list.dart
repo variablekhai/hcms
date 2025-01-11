@@ -11,14 +11,14 @@ Widget _buildHeader() {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Padding(
-        padding: EdgeInsets.only(left: 25, right: 25, top: 40, bottom: 25),
+        padding: const EdgeInsets.only(left: 25, right: 25, top: 40, bottom: 25),
         child: Row(
             children: [
-            Text(
+            const Text(
               'Hi, Khairul ',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            SizedBox(width: 5),
+            const SizedBox(width: 5),
             Image.asset(
               'assets/wave.png',
               height: 24,
@@ -28,8 +28,8 @@ Widget _buildHeader() {
         ),
       ),
       Padding(
-        padding: EdgeInsets.symmetric(horizontal: 25),
-        child: Text(
+        padding: const EdgeInsets.symmetric(horizontal: 25),
+        child: const Text(
           'My Bookings',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
@@ -39,7 +39,7 @@ Widget _buildHeader() {
 }
 
 class BookingList extends StatelessWidget {
-  const BookingList({Key? key}) : super(key: key);
+  const BookingList({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +78,7 @@ class BookingList extends StatelessWidget {
                       cleanerId: booking['cleaner_id'],
                       bookingDateTime: (booking['booking_datetime'] as Timestamp).toDate().toString(),
                       bookingStatus: booking['booking_status'],
-                      bookingTotalCost: booking['booking_total_cost'],
+                      bookingTotalCost: (booking['booking_total_cost'] as num).toDouble(),
                     );
                   },
                 );

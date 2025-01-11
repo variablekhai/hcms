@@ -416,7 +416,6 @@ class BookingDetails extends StatelessWidget {
                       if (bookingData['booking_status'] == "Assigned" ||
                           bookingData['booking_status'] ==
                               "Waiting for Payment") ...[
-                        const SizedBox(height: 16),
                         const Text(
                           'Booking Updates',
                           style: TextStyle(
@@ -424,7 +423,6 @@ class BookingDetails extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 16),
                         StreamBuilder<QuerySnapshot>(
                           stream: FirebaseFirestore.instance
                               .collection('cleaningactivity')
