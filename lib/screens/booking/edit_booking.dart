@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hcms/controllers/user_controller.dart';
 import 'package:intl/intl.dart';
 import 'package:moon_design/moon_design.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -31,6 +32,7 @@ class EditBookingScreen extends StatefulWidget {
 
   @override
   _EditBookingScreenState createState() => _EditBookingScreenState();
+
 }
 
 class _EditBookingScreenState extends State<EditBookingScreen> {
@@ -292,6 +294,7 @@ class _EditBookingScreenState extends State<EditBookingScreen> {
                           Expanded(
                             child: MoonFilledButton(
                               buttonSize: MoonButtonSize.lg,
+                              backgroundColor: const Color(0xFF9DC543),
                               onTap: _submitForm,
                               label: const Text("Update Booking"),
                             ),
@@ -322,6 +325,9 @@ class _HouseCarouselState extends State<HouseCarousel> {
   List<Map<String, dynamic>> _houses = [];
   bool _isLoading = true;
 
+  final user = UserController().currentUser!;
+  
+
   @override
   void initState() {
     super.initState();
@@ -332,7 +338,7 @@ class _HouseCarouselState extends State<HouseCarousel> {
     try {
       final QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('houses')
-          .where('owner_id', isEqualTo: 'owneridtest')
+          .where('owner_id', isEqualTo: user.id)
           .get();
 
       final List<DocumentSnapshot> documents = snapshot.docs;

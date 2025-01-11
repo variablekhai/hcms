@@ -1,17 +1,19 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:hcms/controllers/user_controller.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:moon_design/moon_design.dart';
 
 class EditHouseScreen extends StatefulWidget {
   final Map<String, dynamic> houseData;
-  const EditHouseScreen({super.key, required this.houseData});
+  EditHouseScreen({super.key, required this.houseData});
 
   @override
   _EditHouseScreenState createState() => _EditHouseScreenState();
+
+  final user = UserController().currentUser!;
 }
 
 class _EditHouseScreenState extends State<EditHouseScreen> {
@@ -67,7 +69,7 @@ class _EditHouseScreenState extends State<EditHouseScreen> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Image Uploaded Successfully!')),
+          const SnackBar(content: Text('Image Uploaded Successfully!')),
         );
       } catch (e) {
         setState(() {
@@ -83,12 +85,12 @@ class _EditHouseScreenState extends State<EditHouseScreen> {
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       Map<String, dynamic> updatedHouse = {
-        'house_picture': _imageUrl ?? 'assets/house_placeholder.jpg',
+        'house_picture': _imageUrl ?? 'assets/house-placeholder.png',
         'house_name': _houseNameController.text,
         'house_address': _addressController.text,
         'house_size': '${_sizeController.text} sq ft',
         'house_no_of_rooms': '${_roomsController.text} Rooms',
-        'owner_id': 'owneridtest'
+        'owner_id': widget.user.id,
       };
 
       FirebaseFirestore.instance
@@ -98,7 +100,7 @@ class _EditHouseScreenState extends State<EditHouseScreen> {
           .then((_) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('House updated successfully!')),
+          const SnackBar(content: Text('House updated successfully!')),
         );
       }).catchError((error) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -190,8 +192,9 @@ class _EditHouseScreenState extends State<EditHouseScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    MoonOutlinedButton(
+                    MoonFilledButton(
                       buttonSize: MoonButtonSize.lg,
+                      backgroundColor: const Color(0xFF9DC543),
                       leading: _isUploading
                           ? const SizedBox(
                               width: 20,
@@ -278,6 +281,7 @@ class _EditHouseScreenState extends State<EditHouseScreen> {
                         buttonSize: MoonButtonSize.lg,
                         onTap: _submitForm,
                         label: const Text("Update House"),
+                        backgroundColor:const Color(0xFF9DC543),
                       ),
                     ),
                   ],

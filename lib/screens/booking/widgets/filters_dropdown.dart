@@ -55,7 +55,6 @@ class _DropdownState extends State<Dropdown> {
         // Status Dropdown
         Expanded(
           child: MoonDropdown(
-            
             show: _showStatusChoices,
             groupId: _groupId,
             constrainWidthToChild: true,
@@ -73,6 +72,7 @@ class _DropdownState extends State<Dropdown> {
             ),
             child: MoonFilledButton(
               onTap: () => setState(() => _showStatusChoices = !_showStatusChoices),
+              backgroundColor: const Color(0xFF9DC543),
               label: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -104,6 +104,7 @@ class _DropdownState extends State<Dropdown> {
             ),
             child: MoonFilledButton(
               onTap: () => setState(() => _showDateRangeChoices = !_showDateRangeChoices),
+              backgroundColor: const Color(0xFF9DC543),
               label: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

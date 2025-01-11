@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hcms/controllers/user_controller.dart';
+import 'package:hcms/screens/booking/booking_list.dart';
 import 'package:intl/intl.dart';
 import 'package:moon_design/moon_design.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -40,6 +42,8 @@ class AddBookingScreen extends StatefulWidget {
 
   @override
   _AddBookingScreenState createState() => _AddBookingScreenState();
+
+  final user = UserController().currentUser!;
 }
 
 class _AddBookingScreenState extends State<AddBookingScreen> {
@@ -87,10 +91,13 @@ class _AddBookingScreenState extends State<AddBookingScreen> {
         'booking_duration': int.parse(duration),
         'booking_requirements': _requirementsController.text,
         'cleaner_id': 'N/A',
-        'house_id': FirebaseFirestore.instance.collection('houses').doc(houseId),
-        'owner_id': 'owneridtest',
+        'house_id':
+            FirebaseFirestore.instance.collection('houses').doc(houseId),
+        'owner_id': widget.user.id,
       }).then((_) {
-        Navigator.of(context).pop();
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => BookingList()),
+        );
         MoonToast.show(context,
             backgroundColor: Colors.green[50],
             leading: Icon(
@@ -124,7 +131,6 @@ class _AddBookingScreenState extends State<AddBookingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var _currentPage = 0;
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -200,13 +206,13 @@ class _AddBookingScreenState extends State<AddBookingScreen> {
                         keyboardType: TextInputType.datetime,
                         onTap: () async {
                           FocusScope.of(context).requestFocus(FocusNode());
-                            DateTime? pickedDate = await showDatePicker(
+                          DateTime? pickedDate = await showDatePicker(
                             context: context,
                             initialDate: DateTime.now(),
                             firstDate: DateTime.now(),
                             lastDate: DateTime(2101),
-                            );
-                            if (pickedDate != null) {
+                          );
+                          if (pickedDate != null) {
                             setState(() {
                               _dateController.text =
                                   "${pickedDate.toLocal()}".split(' ')[0];
@@ -290,6 +296,7 @@ class _AddBookingScreenState extends State<AddBookingScreen> {
                     Expanded(
                       child: MoonFilledButton(
                         buttonSize: MoonButtonSize.lg,
+                        backgroundColor: const Color(0xFF9DC543),
                         onTap: _submitForm,
                         label: const Text("Create Booking"),
                       ),
@@ -309,10 +316,13 @@ class HouseCarousel extends StatefulWidget {
   final Function(String) onHouseSelected;
   final String? initialHouseId;
 
-  const HouseCarousel({super.key, required this.onHouseSelected, this.initialHouseId});
+  HouseCarousel(
+      {super.key, required this.onHouseSelected, this.initialHouseId});
 
   @override
   State<HouseCarousel> createState() => _HouseCarouselState();
+
+  final user = UserController().currentUser!;
 }
 
 class _HouseCarouselState extends State<HouseCarousel> {
@@ -335,7 +345,7 @@ class _HouseCarouselState extends State<HouseCarousel> {
     try {
       final QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('houses')
-          .where('owner_id', isEqualTo: 'owneridtest')
+          .where('owner_id', isEqualTo: widget.user.id)
           .get();
 
       final List<DocumentSnapshot> documents = snapshot.docs;
@@ -349,7 +359,8 @@ class _HouseCarouselState extends State<HouseCarousel> {
         _isLoading = false;
 
         if (widget.initialHouseId != null) {
-          _selectedIndex = _houses.indexWhere((house) => house['id'] == widget.initialHouseId);
+          _selectedIndex = _houses
+              .indexWhere((house) => house['id'] == widget.initialHouseId);
           if (_selectedIndex != -1) {
             widget.onHouseSelected(widget.initialHouseId!);
           }

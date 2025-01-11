@@ -59,6 +59,7 @@ class _HouseDetailsScreenState extends State<HouseDetailsScreen> {
                       Expanded(
                         child: MoonFilledButton(
                           label: const Text("Yes"),
+                          backgroundColor: const Color(0xFF9DC543),
                           onTap: () async {
                             await houseRef.delete();
 
@@ -257,13 +258,15 @@ class _HouseDetailsScreenState extends State<HouseDetailsScreen> {
                             FloatingActionButton(
                               mini: true,
                               onPressed: () => _editHouse(houseData),
-                              child: const Icon(Icons.edit),
+                              backgroundColor:const Color(0xFF9DC543),
+                              child: const Icon(Icons.edit, color: Colors.white),
                             ),
                             const SizedBox(width: 4),
                             FloatingActionButton(
                               mini: true,
                               onPressed: _deleteHouse,
-                              child: const Icon(Icons.delete),
+                              backgroundColor:const Color(0xFF9DC543),
+                                child: const Icon(Icons.delete, color: Colors.white),
                             ),
                           ],
                         ),
@@ -277,6 +280,7 @@ class _HouseDetailsScreenState extends State<HouseDetailsScreen> {
                   Expanded(
                     child: MoonFilledButton(
                     buttonSize: MoonButtonSize.lg,
+                    backgroundColor: const Color(0xFF9DC543),
                     onTap: () {
                       Navigator.push(
                       context,

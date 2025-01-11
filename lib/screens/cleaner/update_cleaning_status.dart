@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:moon_design/moon_design.dart';
@@ -18,7 +17,6 @@ class UpdateCleaningStatusScreen extends StatefulWidget {
 
 class _UpdateCleaningStatusScreenState
     extends State<UpdateCleaningStatusScreen> {
-  String _status = 'In Progress';
   Uint8List? _imagePath;
   String? _imageUrl;
   bool _isUploading = false;
@@ -73,7 +71,9 @@ class _UpdateCleaningStatusScreenState
     }
 
     final activityData = {
-      'booking_id': FirebaseFirestore.instance.collection('bookings').doc(widget.bookingId),
+      'booking_id': FirebaseFirestore.instance
+          .collection('bookings')
+          .doc(widget.bookingId),
       'activity_start_time': DateTime.now(),
       'activity_details': _commentsController.text,
       'activity_picture': _imageUrl,
@@ -107,9 +107,9 @@ class _UpdateCleaningStatusScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.only(left: 25, right: 25, top: 40, bottom: 25),
+        padding:
+            const EdgeInsets.only(left: 25, right: 25, top: 40, bottom: 25),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
@@ -129,97 +129,114 @@ class _UpdateCleaningStatusScreenState
               ],
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Update Cleaning Status',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Update Cleaning Status',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(height: 16),
-            Text('Booking ID: ${widget.bookingId}'),
-            SizedBox(height: 16.0),
-            Container(
-              height: 200,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Stack(
-                children: [
-                  _imagePath != null
-                      ? Image.memory(
-                          _imagePath!,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                        )
-                      : const Center(
-                          child: Icon(
-                            Icons.image,
-                            size: 80,
-                            color: Colors.grey,
+            Align(
+                alignment: Alignment.centerLeft,
+                child: Text('Booking ID: ${widget.bookingId}')),
+            const SizedBox(height: 16.0),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 200,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Stack(
+                        children: [
+                          _imagePath != null
+                              ? Image.memory(
+                                  _imagePath!,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                )
+                              : const Center(
+                                  child: Icon(
+                                    Icons.image,
+                                    size: 80,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        MoonFilledButton(
+                          buttonSize: MoonButtonSize.lg,
+                          backgroundColor: const Color(0xFF9DC543),
+                          leading: _isUploading
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.black),
+                                  ),
+                                )
+                              : const Icon(MoonIcons.generic_upload_32_light),
+                          onTap: _uploadImage,
+                          label: const Text("Upload Image"),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16.0),
+                    MoonTextArea(
+                      height: 200,
+                      controller: _commentsController,
+                      hintText: 'Write your comments here...',
+                      validator: (String? value) =>
+                          value != null && value.length < 5
+                              ? "The text should be longer than 5 characters."
+                              : null,
+                    ),
+                    const SizedBox(height: 16.0),
+                    Row(
+                      children: [
+                        MoonCheckbox(
+                          value: _isJobCompleted,
+                          onChanged: (bool? newValue) {
+                            setState(() {
+                              _isJobCompleted = newValue!;
+                            });
+                          },
+                        ),
+                        const Text('Mark Job as Completed'),
+                      ],
+                    ),
+                    const SizedBox(height: 16.0),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: MoonFilledButton(
+                            buttonSize: MoonButtonSize.lg,
+                            backgroundColor: const Color(0xFF9DC543),
+                            onTap: _submitUpdate,
+                            label: const Text("Submit Update"),
                           ),
                         ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                MoonOutlinedButton(
-                  buttonSize: MoonButtonSize.lg,
-                  leading: _isUploading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.black),
-                          ),
-                        )
-                      : const Icon(MoonIcons.generic_upload_32_light),
-                  onTap: _uploadImage,
-                  label: const Text("Upload Image"),
-                ),
-              ],
-            ),
-            SizedBox(height: 16.0),
-            MoonTextArea(
-              height: 200,
-              controller: _commentsController,
-              hintText: 'Write your comments here...',
-              validator: (String? value) => value != null && value.length < 5
-                  ? "The text should be longer than 5 characters."
-                  : null,
-            ),
-            SizedBox(height: 16.0),
-            Row(
-              children: [
-                MoonCheckbox(
-                  value: _isJobCompleted,
-                  onChanged: (bool? newValue) {
-                    setState(() {
-                      _isJobCompleted = newValue!;
-                    });
-                  },
-                ),
-                const Text('Mark Job as Completed'),
-              ],
-            ),
-            const SizedBox(height: 16.0),
-            Row(
-              children: [
-                Expanded(
-                  child: MoonFilledButton(
-                    buttonSize: MoonButtonSize.lg,
-                    onTap: _submitUpdate,
-                    label: const Text("Submit Update"),
-                  ),
-                ),
-              ],
             ),
           ],
         ),

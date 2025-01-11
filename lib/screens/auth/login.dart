@@ -1,13 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:hcms/controllers/user_controller.dart';
 import 'package:hcms/screens/auth/register.dart';
+import 'package:hcms/screens/booking/booking_list.dart';
 import 'package:hcms/screens/cleaner/cleaner_jobs.dart';
 import 'package:hcms/screens/house/house_list.dart';
-import 'package:hcms/widgets/bottomNavigationMenu.dart';
+
+final List<Map<String, String>> _dummyUsers = [
+  {
+    'id': 'de6c5e03-1344-4571',
+    'name': 'House Owner 1',
+    'email': 'houseowner@gmail.com',
+    'password': 'house123',
+    'role': 'house_owner',
+  },
+  {
+    'id': 'b3071a3f-b59d-4f27',
+    'name': 'Cleaner 1',
+    'email': 'cleaner@gmail.com',
+    'password': 'cleaner123',
+    'role': 'cleaner',
+  },
+];
 
 class LoginView extends StatefulWidget {
-  const LoginView({Key? key}) : super(key: key);
+  const LoginView({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _LoginViewState createState() => _LoginViewState();
 }
 
@@ -22,6 +41,20 @@ class _LoginViewState extends State<LoginView> {
   // Password visibility toggle
   bool _isPasswordVisible = false;
 
+  Map<String, String>? _authenticateUser(String email, String password) {
+    for (var user in _dummyUsers) {
+      if (user['email'] == email && user['password'] == password) {
+        return {
+          'id': user['id']!,
+          'name': user['name']!,
+          'email': user['email']!,
+          'role': user['role']!,
+        }; // Return a map with id, email, and role if credentials match
+      }
+    }
+    return {}; // Return null if no match is found
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,30 +68,30 @@ class _LoginViewState extends State<LoginView> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 100),
-                
+
                 // Logo
-                FlutterLogo(
+                const FlutterLogo(
                   size: 120,
                   style: FlutterLogoStyle.markOnly,
                 ),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // Title
                 Text(
                   'Welcome Back',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Email TextField
                 TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(
                     labelText: 'Email',
-                    prefixIcon: Icon(Icons.email),
+                    prefixIcon: const Icon(Icons.email),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -66,21 +99,19 @@ class _LoginViewState extends State<LoginView> {
                   keyboardType: TextInputType.emailAddress,
                   validator: _validateEmail,
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Password TextField
                 TextFormField(
                   controller: _passwordController,
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    prefixIcon: Icon(Icons.lock),
+                    prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
-                      icon: Icon(
-                        _isPasswordVisible 
-                          ? Icons.visibility 
-                          : Icons.visibility_off
-                      ),
+                      icon: Icon(_isPasswordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off),
                       onPressed: () {
                         setState(() {
                           _isPasswordVisible = !_isPasswordVisible;
@@ -94,21 +125,21 @@ class _LoginViewState extends State<LoginView> {
                   obscureText: !_isPasswordVisible,
                   validator: _validatePassword,
                 ),
-                
+
                 // Forgot Password
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: _handleForgotPassword,
+                    onPressed: () => {},
                     child: Text(
                       'Forgot Password?',
                       style: TextStyle(color: Theme.of(context).primaryColor),
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Login Button
                 ElevatedButton(
                   onPressed: _handleLogin,
@@ -118,16 +149,16 @@ class _LoginViewState extends State<LoginView> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: Text('Login'),
+                  child: const Text('Login'),
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Register Navigation
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Don\'t have an account? '),
+                    const Text('Don\'t have an account? '),
                     GestureDetector(
                       onTap: _navigateToRegister,
                       child: Text(
@@ -139,42 +170,6 @@ class _LoginViewState extends State<LoginView> {
                       ),
                     ),
                   ],
-                ),
-                
-                const SizedBox(height: 20),
-                
-                // Divider with OR text
-                Row(
-                  children: [
-                    Expanded(child: Divider(color: Colors.grey)),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text(
-                        'OR',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    ),
-                    Expanded(child: Divider(color: Colors.grey)),
-                  ],
-                ),
-                
-                const SizedBox(height: 20),
-                
-                // Google Sign-In Button
-                OutlinedButton.icon(
-                  onPressed: _handleGoogleSignIn,
-                  icon: Image.asset(
-                    'assets/google_logo.png', 
-                    height: 24,
-                    width: 24,
-                  ),
-                  label: Text('Sign in with Google'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
                 ),
               ],
             ),
@@ -206,51 +201,34 @@ class _LoginViewState extends State<LoginView> {
   // Login Handler (Placeholder)
   void _handleLogin() {
     if (_formKey.currentState!.validate()) {
-      // Implement login logic
-      print('Login attempted');
-      
-      // Placeholder navigation based on user type
-      // In a real app, this would be determined by backend authentication
-      _navigateToUserScreen();
+
+      String email = _emailController.text;
+      String password = _passwordController.text;
+
+      final user = _authenticateUser(
+        email,
+        password,
+      );
+
+      if (user != null && user['role'] != null) {
+        UserController().setUser(user['id']!, user['name']!, user['email']!, user['role']!);
+        _navigateToUserScreen();
+      }
     }
   }
 
   // Navigation to Specific User Screens
   void _navigateToUserScreen() {
-    // Placeholder navigation logic
-    // In a real app, this would be based on user role from authentication
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => 
-        // Determine screen based on user type
-        _emailController.text == 'houseowner@gmail.com' 
-          ? BottomNavigationMenu() 
-          : CleanerJobs()
-      )
-    );
-    
-    print('Navigating to user-specific screen');
+    final user = UserController().currentUser;
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+        builder: (context) =>
+            // Determine screen based on user type
+            user?.role! == 'house_owner' ? BookingList() : CleanerJobs()));
   }
 
-  // Google Sign-In Handler (Placeholder)
-  void _handleGoogleSignIn() {
-    // Implement Google sign-in logic
-    print('Google Sign-In attempted');
-  }
-
-  // Forgot Password Handler (Placeholder)
-  void _handleForgotPassword() {
-    // Implement forgot password logic
-    print('Forgot Password tapped');
-  }
-
-  // Navigation to Register View (Placeholder)
   void _navigateToRegister() {
-    // Implement navigation to register page
-    // For example:
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => RegisterPage())
-    );
-    print('Navigating to Register View');
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (context) => const RegisterPage()));
   }
 
   @override

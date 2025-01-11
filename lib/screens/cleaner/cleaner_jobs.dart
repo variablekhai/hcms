@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hcms/screens/booking/booking_details.dart';
+import 'package:hcms/controllers/user_controller.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hcms/screens/cleaner/job_details.dart';
 import 'package:hcms/screens/cleaner/update_cleaning_status.dart';
@@ -8,25 +8,26 @@ import 'package:moon_design/moon_design.dart';
 class CleanerJobs extends StatefulWidget {
   @override
   _CleanerJobsState createState() => _CleanerJobsState();
+
+  final user = UserController().currentUser!;
 }
 
 class _CleanerJobsState extends State<CleanerJobs> {
   int _selectedSegment = 0;
-  final String cleanerId = 'owneridtest'; // Replace with actual cleaner ID
 
   Widget _buildHeader() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: EdgeInsets.only(left: 25, right: 25, top: 40, bottom: 25),
+          padding: const EdgeInsets.only(left: 25, right: 25, top: 40, bottom: 25),
           child: Row(
             children: [
               Text(
-                'Hi, Khairul ',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                'Hi, ${widget.user.name}',
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-              SizedBox(width: 5),
+              const SizedBox(width: 5),
               Image.asset(
                 'assets/wave.png',
                 height: 24,
@@ -35,7 +36,7 @@ class _CleanerJobsState extends State<CleanerJobs> {
             ],
           ),
         ),
-        Padding(
+        const Padding(
           padding: EdgeInsets.symmetric(horizontal: 25),
           child: Text(
             'Cleaner Jobs',
@@ -110,10 +111,10 @@ class _CleanerJobsState extends State<CleanerJobs> {
                     case 0:
                       return booking['booking_status'] == 'Pending';
                     case 1:
-                      return booking['cleaner_id'] == cleanerId &&
+                      return booking['cleaner_id'] == widget.user.id &&
                           booking['booking_status'] != 'Completed';
                     case 2:
-                      return booking['cleaner_id'] == cleanerId &&
+                      return booking['cleaner_id'] == widget.user.id &&
                           booking['booking_status'] == 'Completed';
                     default:
                       return false;
@@ -121,7 +122,7 @@ class _CleanerJobsState extends State<CleanerJobs> {
                 }).toList();
 
                 if (bookings.isEmpty) {
-                  return Center(child: Text('No Data Available'));
+                  return const Center(child: Text('No Data Available'));
                 }
 
                 return ListView.builder(
@@ -137,7 +138,7 @@ class _CleanerJobsState extends State<CleanerJobs> {
                           .get(),
                       builder: (context, houseSnapshot) {
                         if (!houseSnapshot.hasData) {
-                          return Center(child: CircularProgressIndicator());
+                          return const Center(child: CircularProgressIndicator());
                         }
 
                         final houseData = houseSnapshot.data!;
@@ -312,6 +313,7 @@ class JobCard extends StatelessWidget {
                         children: [
                           Expanded(
                             child: MoonFilledButton(
+                              backgroundColor: const Color(0xFF9DC543),
                               buttonSize: MoonButtonSize.lg,
                               onTap: () {
                                 Navigator.push(

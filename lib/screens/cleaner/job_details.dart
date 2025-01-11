@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hcms/controllers/user_controller.dart';
 import 'package:moon_design/moon_design.dart';
 
 class JobDetailsScreen extends StatelessWidget {
   final String bookingId;
 
-  const JobDetailsScreen({Key? key, required this.bookingId}) : super(key: key);
+  JobDetailsScreen({Key? key, required this.bookingId}) : super(key: key);
 
   Future<Map<String, dynamic>> _getBookingDetails() async {
     final bookingSnapshot = await FirebaseFirestore.instance
@@ -23,6 +24,8 @@ class JobDetailsScreen extends StatelessWidget {
       'house': houseData,
     };
   }
+
+  final user = UserController().currentUser!;
 
   @override
   Widget build(BuildContext context) {
@@ -267,15 +270,16 @@ class JobDetailsScreen extends StatelessWidget {
                       children: [
                         Expanded(
                           child: MoonFilledButton(
+                            backgroundColor: const Color(0xFF9DC543),
                             buttonSize: MoonButtonSize.lg,
                             onTap: () async {
                               await FirebaseFirestore.instance
                                   .collection('bookings')
                                   .doc(bookingId)
-                                    .update({
-                                    'booking_status': 'Assigned',
-                                    'cleaner_id': 'owneridtest'
-                                    });
+                                  .update({
+                                'booking_status': 'Assigned',
+                                'cleaner_id': user.id
+                              });
 
                               Navigator.of(context).pop();
 

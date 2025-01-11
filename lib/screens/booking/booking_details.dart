@@ -15,11 +15,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
-      ),
-      home: const BookingDetails(bookingId: '123'),
+    return const MaterialApp(
+      home: BookingDetails(bookingId: '123'),
     );
   }
 }
@@ -189,7 +186,7 @@ class BookingDetails extends StatelessWidget {
                                       const SizedBox(width: 8),
                                       Flexible(
                                         child: Text(
-                                          'Time: ${bookingData['booking_datetime'].split(' ')[1].substring(0, 5)} ${int.parse(bookingData['booking_datetime'].split(' ')[1].substring(0, 2)) >= 12 ? 'PM' : 'AM'}',
+                                            'Time: ${int.parse(bookingData['booking_datetime'].split(' ')[1].substring(0, 2)) % 12 == 0 ? 12 : int.parse(bookingData['booking_datetime'].split(' ')[1].substring(0, 2)) % 12}:${bookingData['booking_datetime'].split(' ')[1].substring(3, 5)} ${int.parse(bookingData['booking_datetime'].split(' ')[1].substring(0, 2)) >= 12 ? 'PM' : 'AM'}',
                                           style: const TextStyle(
                                               fontSize: 16,
                                               color: Colors.black),
@@ -223,7 +220,7 @@ class BookingDetails extends StatelessWidget {
                                       const SizedBox(width: 8),
                                       Flexible(
                                         child: Text(
-                                          'Wage: ${bookingData['booking_total_cost'].toStringAsFixed(2)}',
+                                          'Wage: RM ${bookingData['booking_total_cost'].toStringAsFixed(2)}',
                                           style: const TextStyle(
                                               fontSize: 16,
                                               color: Colors.black),
@@ -366,6 +363,7 @@ class BookingDetails extends StatelessWidget {
                             Expanded(
                               child: MoonFilledButton(
                                 buttonSize: MoonButtonSize.lg,
+                                backgroundColor: const Color(0xFF9DC543),
                                 onTap: bookingData['booking_status'] ==
                                         'Assigned'
                                     ? null
@@ -403,6 +401,7 @@ class BookingDetails extends StatelessWidget {
                             Expanded(
                               child: MoonFilledButton(
                                 buttonSize: MoonButtonSize.lg,
+                                backgroundColor: const Color(0xFF9DC543),
                                 onTap: () {
                                   // Implement payment logic here
                                 },
@@ -411,7 +410,7 @@ class BookingDetails extends StatelessWidget {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 24),
                       ],
                       if (bookingData['booking_status'] == "Assigned" ||
                           bookingData['booking_status'] ==
@@ -464,8 +463,6 @@ class BookingDetails extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   elevation: 3,
-                                  margin:
-                                      const EdgeInsets.symmetric(vertical: 8),
                                   child: Padding(
                                     padding: const EdgeInsets.all(16),
                                     child: Column(
