@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hcms/screens/auth/register.dart';
 import 'package:hcms/screens/cleaner/cleaner_jobs.dart';
 import 'package:hcms/screens/house/house_list.dart';
+import 'package:hcms/widgets/bottomNavigationMenu.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
@@ -222,7 +223,7 @@ class _LoginViewState extends State<LoginView> {
       MaterialPageRoute(builder: (context) => 
         // Determine screen based on user type
         _emailController.text == 'houseowner@gmail.com' 
-          ? HouseListScreen() 
+          ? BottomNavigationMenu() 
           : CleanerJobs()
       )
     );

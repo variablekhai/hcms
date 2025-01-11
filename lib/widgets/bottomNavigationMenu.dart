@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hcms/screens/booking/booking_list.dart';
+import 'package:hcms/screens/house/house_list.dart';
 import 'package:hcms/screens/payment/checkout.dart';
 import '../screens/user_view.dart';
 
@@ -15,8 +16,8 @@ class _BottomNavigationMenuState extends State<BottomNavigationMenu> {
 
 // Letak Page Korang
   final List<Widget> _pages = [
-    const UserView(),
-    const BookingList(),
+    HouseListScreen(),
+    BookingList(),
     const Checkout(),
     const UserView(),
   ];
