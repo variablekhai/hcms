@@ -46,3 +46,7 @@ android/gradle.properties
 .env
 .vscode/
 .env
+linux/flutter/generated_plugin_registrant.cc
+linux/flutter/generated_plugin_registrant.cc
+linux/flutter/generated_plugins.cmake
+macos/Flutter/GeneratedPluginRegistrant.swift

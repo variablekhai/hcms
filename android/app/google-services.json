@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:859419283461:android:174e0bd58b315e55accc6c",
         "android_client_info": {
-          "package_name": "com.hcms.app"
+          "package_name": "com.example.hcms"
         }
       },
       "oauth_client": [],

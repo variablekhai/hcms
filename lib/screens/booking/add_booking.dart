@@ -34,7 +34,9 @@ class _MyAppState extends State<MyApp> {
 }
 
 class AddBookingScreen extends StatefulWidget {
-  AddBookingScreen({super.key});
+  final String? houseId;
+
+  AddBookingScreen({super.key, this.houseId});
 
   @override
   _AddBookingScreenState createState() => _AddBookingScreenState();
@@ -49,6 +51,14 @@ class _AddBookingScreenState extends State<AddBookingScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   String _selectedHouseId = '';
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.houseId != null) {
+      _selectedHouseId = widget.houseId!;
+    }
+  }
 
   @override
   void dispose() {
@@ -69,18 +79,6 @@ class _AddBookingScreenState extends State<AddBookingScreen> {
 
       final dateTimeString = '$date $time';
       final dateTime = DateFormat('yyyy-MM-dd h:mm a').parse(dateTimeString);
-
-      //Debug using moontoast
-      // MoonToast.show(context,
-      //     backgroundColor: Colors.green[50],
-      //     leading: const Icon(
-      //       MoonIcons.time_calendar_success_24_regular,
-      //       color: Colors.green,
-      //     ),
-      //     label: Text(
-      //       '$dateTime $duration $wage $houseId',
-      //       style: TextStyle(color: Colors.green),
-      //     ));
 
       FirebaseFirestore.instance.collection('bookings').add({
         'booking_datetime': Timestamp.fromDate(dateTime),
@@ -181,7 +179,10 @@ class _AddBookingScreenState extends State<AddBookingScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                HouseCarousel(onHouseSelected: _onHouseSelected),
+                HouseCarousel(
+                  onHouseSelected: _onHouseSelected,
+                  initialHouseId: widget.houseId,
+                ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -306,8 +307,9 @@ class _AddBookingScreenState extends State<AddBookingScreen> {
 
 class HouseCarousel extends StatefulWidget {
   final Function(String) onHouseSelected;
+  final String? initialHouseId;
 
-  const HouseCarousel({super.key, required this.onHouseSelected});
+  const HouseCarousel({super.key, required this.onHouseSelected, this.initialHouseId});
 
   @override
   State<HouseCarousel> createState() => _HouseCarouselState();
@@ -345,6 +347,13 @@ class _HouseCarouselState extends State<HouseCarousel> {
           return data;
         }).toList();
         _isLoading = false;
+
+        if (widget.initialHouseId != null) {
+          _selectedIndex = _houses.indexWhere((house) => house['id'] == widget.initialHouseId);
+          if (_selectedIndex != -1) {
+            widget.onHouseSelected(widget.initialHouseId!);
+          }
+        }
       });
     } catch (e) {
       setState(() {
