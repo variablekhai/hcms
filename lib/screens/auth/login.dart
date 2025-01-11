@@ -207,7 +207,7 @@ class _LoginViewState extends State<LoginView> {
     Navigator.of(context).pushReplacement(MaterialPageRoute(
         builder: (context) =>
             // Determine screen based on user type
-            user?.role! == 'house_owner' ? HouseOwnerDashboard() : CleanerDashboard()));
+            user?.role! == 'house_owner' ? HouseListScreen() : CleanerJobs()));
   }
 
   void _navigateToRegister() {
