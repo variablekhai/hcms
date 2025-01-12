@@ -19,7 +19,7 @@ class _BottomNavigationMenuState extends State<BottomNavigationMenu> {
     HouseListScreen(),
     BookingList(),
     const HouseOwnerDashboard(),
-    const Checkout(),
+    BookingList(),
   ];
 
   void _onItemTapped(int index) {
