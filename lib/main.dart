@@ -11,9 +11,10 @@ import 'controllers/user_controller.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 Future<void> main() async {
-  Stripe.publishableKey = 'pk_test_51QBuXtEbdf93ZSBchgoENGapIfl7UuEQhMmOPiAmZ3ILH86kcQu8PpCgBiiFS5cQpYQTM2tzfvBdD70xcEhiX61Y00H3XZLoWb';
-  await dotenv.load(fileName: "assets/.env");
-  
+  Stripe.publishableKey =
+      'pk_test_51QBuXtEbdf93ZSBchgoENGapIfl7UuEQhMmOPiAmZ3ILH86kcQu8PpCgBiiFS5cQpYQTM2tzfvBdD70xcEhiX61Y00H3XZLoWb';
+  // await dotenv.load(fileName: "assets/.env");
+
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
