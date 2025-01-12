@@ -5,6 +5,7 @@ import 'package:hcms/screens/cleaner/cleaner_jobs.dart';
 import 'package:hcms/screens/house/house_list.dart';
 import 'package:hcms/screens/report/cleaner_dashboard.dart';
 import 'package:hcms/screens/report/house_owner_dashboard.dart';
+import 'package:hcms/widgets/bottomNavigationMenu.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -207,7 +208,7 @@ class _LoginViewState extends State<LoginView> {
     Navigator.of(context).pushReplacement(MaterialPageRoute(
         builder: (context) =>
             // Determine screen based on user type
-            user?.role! == 'house_owner' ? HouseListScreen() : CleanerJobs()));
+            user?.role! == 'house_owner' ? BottomNavigationMenu() : CleanerJobs()));
   }
 
   void _navigateToRegister() {
