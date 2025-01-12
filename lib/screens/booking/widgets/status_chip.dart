@@ -10,13 +10,13 @@ class StatusChip extends StatelessWidget {
     Color chipColor;
     switch (status) {
       case 'Assigned':
-        chipColor = Colors.blue;
+        chipColor = Colors.lightBlueAccent;
         break;
       case 'Pending':
-        chipColor = Colors.orange;
+        chipColor = Colors.amber;
         break;
       case 'Completed':
-        chipColor = Colors.green;
+        chipColor = Colors.lightGreen;
         break;
       default:
         chipColor = Colors.grey;

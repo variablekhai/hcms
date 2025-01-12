@@ -41,7 +41,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 const SizedBox(height: 80),
                 
                 // Logo
-                FlutterLogo(
+                const FlutterLogo(
                   size: 120,
                   style: FlutterLogoStyle.markOnly,
                 ),

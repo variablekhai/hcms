@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hcms/controllers/user_controller.dart';
 import 'package:hcms/screens/booking/add_booking.dart';
 import 'package:hcms/screens/booking/booking_details.dart';
 import 'package:hcms/screens/booking/widgets/filters_dropdown.dart';
@@ -11,23 +12,24 @@ Widget _buildHeader() {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Padding(
-        padding: EdgeInsets.only(left: 25, right: 25, top: 40, bottom: 25),
+        padding:
+            const EdgeInsets.only(left: 25, right: 25, top: 40, bottom: 25),
         child: Row(
-            children: [
-            Text(
+          children: [
+            const Text(
               'Hi, Khairul ',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            SizedBox(width: 5),
+            const SizedBox(width: 5),
             Image.asset(
               'assets/wave.png',
               height: 24,
               width: 24,
             ),
-            ],
+          ],
         ),
       ),
-      Padding(
+      const Padding(
         padding: EdgeInsets.symmetric(horizontal: 25),
         child: Text(
           'My Bookings',
@@ -38,9 +40,16 @@ Widget _buildHeader() {
   );
 }
 
-class BookingList extends StatelessWidget {
-  const BookingList({Key? key}) : super(key: key);
+class BookingList extends StatefulWidget {
+  BookingList({super.key});
 
+  @override
+  _BookingListState createState() => _BookingListState();
+
+  final user = UserController().currentUser!;
+}
+
+class _BookingListState extends State<BookingList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,16 +67,17 @@ class BookingList extends StatelessWidget {
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('bookings')
-                  .where('owner_id', isEqualTo: 'owneridtest')
+                  .where('owner_id', isEqualTo: widget.user.id)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
                 if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                  return const Center(child: Text('You have not made any bookings.'));
+                  return const Center(
+                      child: Text('You have not made any bookings.'));
                 }
-                final bookings = snapshot.data!.docs;  
+                final bookings = snapshot.data!.docs;
                 return ListView.builder(
                   itemCount: bookings.length,
                   itemBuilder: (context, index) {
@@ -76,9 +86,13 @@ class BookingList extends StatelessWidget {
                       bookingId: booking.id,
                       houseId: booking['house_id'].id,
                       cleanerId: booking['cleaner_id'],
-                      bookingDateTime: (booking['booking_datetime'] as Timestamp).toDate().toString(),
+                      bookingDateTime:
+                          (booking['booking_datetime'] as Timestamp)
+                              .toDate()
+                              .toString(),
                       bookingStatus: booking['booking_status'],
-                      bookingTotalCost: booking['booking_total_cost'],
+                      bookingTotalCost:
+                          (booking['booking_total_cost'] as num).toDouble(),
                     );
                   },
                 );
@@ -89,7 +103,7 @@ class BookingList extends StatelessWidget {
       ),
       // Bottom Navigation Bar
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.deepPurpleAccent,
+        backgroundColor: const Color(0xFF9DC543),
         onPressed: () {
           Navigator.push(
             context,
@@ -131,7 +145,10 @@ class _BookingCardState extends State<BookingCard> {
   String houseAddress = '';
 
   Future<DocumentSnapshot> getHouseData(String houseId) async {
-    return await FirebaseFirestore.instance.collection('houses').doc(houseId).get();
+    return await FirebaseFirestore.instance
+        .collection('houses')
+        .doc(houseId)
+        .get();
   }
 
   @override
@@ -154,9 +171,10 @@ class _BookingCardState extends State<BookingCard> {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => BookingDetails(
-                bookingId: widget.bookingId,
-                )),
+              MaterialPageRoute(
+                  builder: (context) => BookingDetails(
+                        bookingId: widget.bookingId,
+                      )),
             );
           },
           child: Card(
@@ -178,9 +196,10 @@ class _BookingCardState extends State<BookingCard> {
                       topRight: Radius.circular(12),
                     ),
                     image: DecorationImage(
-                        image: houseImage.isNotEmpty
+                      image: houseImage.isNotEmpty
                           ? NetworkImage(houseImage)
-                          : const AssetImage('assets/placeholder.png') as ImageProvider,
+                          : const AssetImage('assets/house-placeholder.png')
+                              as ImageProvider,
                       fit: BoxFit.cover,
                     ),
                   ),
@@ -202,10 +221,10 @@ class _BookingCardState extends State<BookingCard> {
                         children: [
                           const Icon(Icons.event, size: 16, color: Colors.grey),
                           const SizedBox(width: 4),
-                            Text(
+                          Text(
                             '${widget.bookingDateTime.split(' ')[0].split('-')[2]}/${widget.bookingDateTime.split(' ')[0].split('-')[1]}/${widget.bookingDateTime.split(' ')[0].split('-')[0]}',
                             style: TextStyle(color: Colors.grey[700]),
-                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 6),
@@ -215,7 +234,7 @@ class _BookingCardState extends State<BookingCard> {
                               size: 16, color: Colors.grey),
                           const SizedBox(width: 4),
                           Text(
-                            '${widget.bookingDateTime.split(' ')[1].substring(0, 5)} ${int.parse(widget.bookingDateTime.split(' ')[1].substring(0, 2)) >= 12 ? 'PM' : 'AM'}',
+                            '${int.parse(widget.bookingDateTime.split(' ')[1].substring(0, 2)) % 12 == 0 ? 12 : int.parse(widget.bookingDateTime.split(' ')[1].substring(0, 2)) % 12}:${widget.bookingDateTime.split(' ')[1].substring(3, 5)} ${int.parse(widget.bookingDateTime.split(' ')[1].substring(0, 2)) >= 12 ? 'PM' : 'AM'}',
                             style: TextStyle(color: Colors.grey[700]),
                           ),
                         ],
@@ -223,7 +242,8 @@ class _BookingCardState extends State<BookingCard> {
                       const SizedBox(height: 6),
                       Row(
                         children: [
-                          const Icon(Icons.payments, size: 16, color: Colors.grey),
+                          const Icon(Icons.payments,
+                              size: 16, color: Colors.grey),
                           const SizedBox(width: 4),
                           Text(
                             'RM ${widget.bookingTotalCost.toStringAsFixed(2)}',
@@ -237,7 +257,9 @@ class _BookingCardState extends State<BookingCard> {
                           const Icon(Icons.face, size: 16, color: Colors.grey),
                           const SizedBox(width: 4),
                           Text(
-                            widget.cleanerId == 'N/A' ? 'No cleaner assigned yet' : 'Cleaner assigned',
+                            widget.cleanerId == 'N/A'
+                                ? 'No cleaner assigned yet'
+                                : 'Cleaner assigned',
                             style: TextStyle(color: Colors.grey[700]),
                           ),
                         ],
@@ -258,4 +280,3 @@ class _BookingCardState extends State<BookingCard> {
     );
   }
 }
-

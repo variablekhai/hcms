@@ -1,16 +1,19 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:hcms/controllers/user_controller.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:moon_design/moon_design.dart';
 
 class AddHouseScreen extends StatefulWidget {
-  const AddHouseScreen({super.key});
+  AddHouseScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _AddHouseScreenState createState() => _AddHouseScreenState();
+
+  final user = UserController().currentUser!;
 }
 
 class _AddHouseScreenState extends State<AddHouseScreen> {
@@ -50,7 +53,7 @@ class _AddHouseScreenState extends State<AddHouseScreen> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Image Uploaded Successfully!')),
+          const SnackBar(content: Text('Image Uploaded Successfully!')),
         );
       } catch (e) {
         setState(() {
@@ -66,18 +69,18 @@ class _AddHouseScreenState extends State<AddHouseScreen> {
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       Map<String, dynamic> newHouse = {
-        'house_picture': _imageUrl ?? 'assets/house_placeholder.jpg',
+        'house_picture': _imageUrl ?? 'assets/house-placeholder.png',
         'house_name': _houseNameController.text,
         'house_address': _addressController.text,
         'house_size': '${_sizeController.text} sq ft',
         'house_no_of_rooms': '${_roomsController.text} Rooms',
-        'owner_id': 'owneridtest'
+        'owner_id': widget.user.id,
       };
 
       FirebaseFirestore.instance.collection('houses').add(newHouse).then((_) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('House added successfully!')),
+          const SnackBar(content: Text('House added successfully!')),
         );
       }).catchError((error) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -163,8 +166,9 @@ class _AddHouseScreenState extends State<AddHouseScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    MoonOutlinedButton(
+                    MoonFilledButton(
                       buttonSize: MoonButtonSize.lg,
+                      backgroundColor: const Color(0xFF9DC543),
                       leading: _isUploading
                           ? const SizedBox(
                               width: 20,
@@ -249,6 +253,7 @@ class _AddHouseScreenState extends State<AddHouseScreen> {
                     Expanded(
                       child: MoonFilledButton(
                         buttonSize: MoonButtonSize.lg,
+                        backgroundColor: const Color(0xFF9DC543),
                         onTap: _submitForm,
                         label: const Text("Add House"),
                       ),

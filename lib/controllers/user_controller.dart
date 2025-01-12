@@ -1,40 +1,61 @@
-import 'package:flutter/foundation.dart';
 import 'package:hcms/models/user_model.dart';
 
-class UserController extends ChangeNotifier {
-  List<User> _users = [];
-  bool _isLoading = false;
+final List<Map<String, String>> _dummyUsers = [
+  {
+    'id': 'de6c5e03-1344-4571',
+    'name': 'House Owner 1',
+    'email': 'houseowner@gmail.com',
+    'password': 'house123',
+    'role': 'house_owner',
+  },
+  {
+    'id': 'de6c5e03-1344-1236',
+    'name': 'House Owner 2',
+    'email': 'houseowner2@gmail.com',
+    'password': 'house123',
+    'role': 'house_owner',
+  },
+  {
+    'id': 'b3071a3f-b59d-4f27',
+    'name': 'Cleaner 1',
+    'email': 'cleaner@gmail.com',
+    'password': 'cleaner123',
+    'role': 'cleaner',
+  },
+  {
+    'id': 'b3071a3f-b59d-asd6',
+    'name': 'Cleaner 2',
+    'email': 'cleaner2@gmail.com',
+    'password': 'cleaner123',
+    'role': 'cleaner',
+  },
+];
 
-  List<User> get users => _users;
-  bool get isLoading => _isLoading;
+class UserController {
+  static final UserController _instance = UserController._internal();
+  UserModel? _currentUser;
 
-  // Simulate fetching users from an API/DB
-  Future<void> fetchUsers() async {
-    _isLoading = true;
-    notifyListeners();
-
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 2));
-
-    // Mock data
-    _users = [
-      User(id: '1', name: 'Khairul Azfar', email: 'khairu@gmail.com'),
-      User(id: '2', name: 'Danial Nabil', email: 'danial@gmail.com')
-    ];
-
-    _isLoading = false;
-    notifyListeners();
+  factory UserController() {
+    return _instance;
   }
 
-  // Add a new user
-  void addUser(User user) {
-    _users.add(user);
-    notifyListeners();
+  UserController._internal();
+
+  void setUser(String id, String name, String email, String role) {
+    _currentUser = UserModel(id: id, name: name, email: email, role: role);
   }
 
-  // Remove a user
-  void removeUser(String userId) {
-    _users.removeWhere((user) => user.id == userId);
-    notifyListeners();
+  void clearUser() {
+    _currentUser = null;
+  }
+
+  UserModel? get currentUser => _currentUser;
+
+  List<Map<String, String>> get dummyUsers => _dummyUsers;
+
+  String? getNameById(String id) {
+    final user =
+        _dummyUsers.firstWhere((user) => user['id'] == id, orElse: () => {});
+    return user.isNotEmpty ? user['name'] : null;
   }
 }

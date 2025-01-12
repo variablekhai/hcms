@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hcms/controllers/user_controller.dart';
 import 'house_details.dart';
 import 'add_house.dart';
 
@@ -8,14 +9,15 @@ Widget _buildHeader() {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Padding(
-        padding: EdgeInsets.only(left: 25, right: 25, top: 40, bottom: 25),
+        padding:
+            const EdgeInsets.only(left: 25, right: 25, top: 40, bottom: 25),
         child: Row(
           children: [
             Text(
-              'Hi, Sandhiya ',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              'Hi, ${UserController().currentUser!.name}',
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            SizedBox(width: 5),
+            const SizedBox(width: 5),
             Image.asset(
               'assets/wave.png',
               height: 24,
@@ -24,7 +26,7 @@ Widget _buildHeader() {
           ],
         ),
       ),
-      Padding(
+      const Padding(
         padding: EdgeInsets.symmetric(horizontal: 25),
         child: Text(
           'My Houses',
@@ -37,7 +39,12 @@ Widget _buildHeader() {
 
 class HouseListScreen extends StatefulWidget {
   @override
+  // ignore: library_private_types_in_public_api
   _HouseListScreenState createState() => _HouseListScreenState();
+
+  final user = UserController().currentUser!;
+
+  HouseListScreen({super.key});
 }
 
 class _HouseListScreenState extends State<HouseListScreen> {
@@ -53,7 +60,7 @@ class _HouseListScreenState extends State<HouseListScreen> {
             child: TextField(
               decoration: InputDecoration(
                 hintText: 'Search houses...',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(100),
                   borderSide: BorderSide.none,
@@ -65,14 +72,22 @@ class _HouseListScreenState extends State<HouseListScreen> {
           ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('houses').snapshots(),
+              stream: FirebaseFirestore.instance
+                  .collection('houses')
+                  .where('owner_id', isEqualTo: widget.user.id)
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 }
                 if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text('Start by adding a house'));
+                }
+
                 final houses = snapshot.data!.docs.map((doc) {
                   final data = doc.data() as Map<String, dynamic>;
                   data['id'] = doc.id;
@@ -102,8 +117,8 @@ class _HouseListScreenState extends State<HouseListScreen> {
             FirebaseFirestore.instance.collection('houses').add(newHouse);
           }
         },
-        child: Icon(Icons.add),
-        backgroundColor: Colors.blue,
+        backgroundColor: const Color(0xFF9DC543),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
@@ -121,7 +136,7 @@ class HouseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () async {
-        final updatedHouse = await Navigator.push(
+        Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => HouseDetailsScreen(
@@ -131,7 +146,7 @@ class HouseCard extends StatelessWidget {
         );
       },
       child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 25, vertical: 8),
+        margin: const EdgeInsets.only(left: 25, right: 25, bottom: 18),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
