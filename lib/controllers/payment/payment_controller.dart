@@ -21,7 +21,7 @@ class PaymentController {
         paymentIntentClientSecret: paymentIntentClientSecret,
         merchantDisplayName: 'Flutter Stripe Store',
       ));
-      await _processPayment(context, bookingId);
+      await _processPayment(context, bookingId, amount);
     } catch (e) {
       print(e);
     }
@@ -56,11 +56,13 @@ class PaymentController {
     return null;
   }
 
-  Future<void> _processPayment(BuildContext context, String bookingId) async {
+  Future<void> _processPayment(
+      BuildContext context, String bookingId, double amount) async {
     try {
       await Stripe.instance.presentPaymentSheet();
       navDone(context);
       updateBookingStatus(context, bookingId);
+      addPaymentDetails(context, bookingId, amount);
     } catch (e) {
       if (e is StripeException) {
         print('StripeException: ${e.error.localizedMessage}');
@@ -99,6 +101,29 @@ class PaymentController {
     }).catchError((error) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to update payment: $error')),
+      );
+    });
+  }
+
+  void addPaymentDetails(
+      BuildContext context, String bookingId, double amount) {
+    Map<String, dynamic> paymentDetails = {
+      'booking_id': bookingId,
+      'payment_amount': amount,
+      'payment_method': 'Credit Card',
+      'payment_date': DateTime.now(),
+      'payment_status': 'Paid',
+    };
+    FirebaseFirestore.instance
+        .collection('payment')
+        .add(paymentDetails)
+        .then((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Payment details added!')),
+      );
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to add payment details: $error')),
       );
     });
   }
