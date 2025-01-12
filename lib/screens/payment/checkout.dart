@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:hcms/controllers/payment/payment_controller.dart';
+import 'package:hcms/controllers/rating/rating_controller.dart';
 import 'package:hcms/screens/auth/login.dart';
 import 'package:hcms/screens/booking/edit_booking.dart';
 import 'package:moon_design/moon_design.dart';
@@ -10,10 +12,58 @@ import 'package:hcms/screens/booking/edit_booking.dart';
 import 'package:hcms/screens/booking/widgets/status_chip.dart';
 import 'package:moon_design/moon_design.dart';
 
+// Create a separate stateful widget for the rating
+class CleanerRatingBar extends StatefulWidget {
+  final double initialRating;
+  final Function(double) onRatingChanged;
+
+  const CleanerRatingBar({
+    super.key,
+    this.initialRating = 5,
+    required this.onRatingChanged,
+  });
+
+  @override
+  State<CleanerRatingBar> createState() => _CleanerRatingBarState();
+}
+
+class _CleanerRatingBarState extends State<CleanerRatingBar> {
+  late double _rating;
+
+  @override
+  void initState() {
+    super.initState();
+    _rating = widget.initialRating;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RatingBar.builder(
+      initialRating: _rating,
+      minRating: 1,
+      direction: Axis.horizontal,
+      allowHalfRating: true,
+      itemCount: 5,
+      itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+      itemBuilder: (context, _) => const Icon(
+        Icons.star,
+        color: Colors.amber,
+      ),
+      onRatingUpdate: (rating) {
+        setState(() {
+          _rating = rating;
+        });
+        widget.onRatingChanged(rating);
+      },
+    );
+  }
+}
+
 class Checkout extends StatelessWidget {
   final String bookingId;
+  double rating;
 
-  const Checkout({super.key, required this.bookingId});
+  Checkout({super.key, required this.bookingId, this.rating = 5});
 
   @override
   Widget build(BuildContext context) {
@@ -244,6 +294,33 @@ class Checkout extends StatelessWidget {
                       if (bookingData['booking_status'] ==
                           "Waiting for Payment") ...[
                         const SizedBox(height: 16),
+                        const Text(
+                          'Please rate the cleaner service',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        MoonTextArea(
+                          height: 150,
+                          hintText: 'Enter your review...',
+                          onChanged: (value) {
+                            // Handle the review text change here
+                            RatingController.instance.updateReview(value);
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        CleanerRatingBar(
+                          initialRating: rating,
+                          onRatingChanged: (newRating) {
+                            // Handle the rating change here if needed
+                            rating = newRating;
+                            print('New rating: $newRating');
+                            print(rating);
+                          },
+                        ),
+                        const SizedBox(height: 16),
                         Text(
                           'Total: RM${bookingData['booking_total_cost'].toStringAsFixed(2)}',
                           style: const TextStyle(
@@ -259,10 +336,22 @@ class Checkout extends StatelessWidget {
                                 buttonSize: MoonButtonSize.lg,
                                 backgroundColor: const Color(0xFF9DC543),
                                 onTap: () {
-                                  PaymentController.instance.makePayment(
-                                      context,
-                                      bookingData['booking_total_cost'],
-                                      bookingId);
+                                  PaymentController.instance
+                                      .makePayment(
+                                          context,
+                                          bookingData['booking_total_cost'],
+                                          bookingId)
+                                      .then((_) {
+                                    // Assuming makePayment handles success internally
+                                    RatingController.instance.addRating(
+                                        context,
+                                        bookingId,
+                                        rating,
+                                        bookingData['cleaner_id'],
+                                        houseData['owner_id']);
+                                  }).catchError((error) {
+                                    // Handle payment failure if needed
+                                  });
                                 },
                                 label: const Text("Checkout"),
                               ),
