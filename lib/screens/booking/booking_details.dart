@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hcms/controllers/user_controller.dart';
 import 'package:hcms/screens/booking/edit_booking.dart';
 import 'package:hcms/screens/booking/widgets/status_chip.dart';
+import 'package:hcms/screens/payment/checkout.dart';
 import 'package:moon_design/moon_design.dart';
 
 void main() {
@@ -187,7 +188,7 @@ class BookingDetails extends StatelessWidget {
                                       const SizedBox(width: 8),
                                       Flexible(
                                         child: Text(
-                                            'Time: ${int.parse(bookingData['booking_datetime'].split(' ')[1].substring(0, 2)) % 12 == 0 ? 12 : int.parse(bookingData['booking_datetime'].split(' ')[1].substring(0, 2)) % 12}:${bookingData['booking_datetime'].split(' ')[1].substring(3, 5)} ${int.parse(bookingData['booking_datetime'].split(' ')[1].substring(0, 2)) >= 12 ? 'PM' : 'AM'}',
+                                          'Time: ${int.parse(bookingData['booking_datetime'].split(' ')[1].substring(0, 2)) % 12 == 0 ? 12 : int.parse(bookingData['booking_datetime'].split(' ')[1].substring(0, 2)) % 12}:${bookingData['booking_datetime'].split(' ')[1].substring(3, 5)} ${int.parse(bookingData['booking_datetime'].split(' ')[1].substring(0, 2)) >= 12 ? 'PM' : 'AM'}',
                                           style: const TextStyle(
                                               fontSize: 16,
                                               color: Colors.black),
@@ -404,7 +405,13 @@ class BookingDetails extends StatelessWidget {
                                 buttonSize: MoonButtonSize.lg,
                                 backgroundColor: const Color(0xFF9DC543),
                                 onTap: () {
-                                  // Implement payment logic here
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => Checkout(
+                                              bookingId: bookingId,
+                                            )),
+                                  );
                                 },
                                 label: const Text("Make Payment"),
                               ),
