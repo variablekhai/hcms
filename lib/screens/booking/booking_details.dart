@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:hcms/controllers/booking/booking_controller.dart';
 import 'package:hcms/controllers/user_controller.dart';
 import 'package:hcms/screens/booking/edit_booking.dart';
 import 'package:hcms/screens/booking/widgets/status_chip.dart';
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       home: BookingDetails(bookingId: '123'),
     );
   }
@@ -26,7 +27,9 @@ class MyApp extends StatelessWidget {
 class BookingDetails extends StatelessWidget {
   final String bookingId;
 
-  const BookingDetails({super.key, required this.bookingId});
+  BookingDetails({super.key, required this.bookingId});
+
+  final BookingController _bookingController = BookingController();
 
   @override
   Widget build(BuildContext context) {
@@ -295,16 +298,9 @@ class BookingDetails extends StatelessWidget {
                                                               label: const Text(
                                                                   "Yes"),
                                                               onTap: () async {
-                                                                await FirebaseFirestore
-                                                                    .instance
-                                                                    .collection(
-                                                                        'bookings')
-                                                                    .doc(
-                                                                        bookingId)
-                                                                    .update({
-                                                                  'booking_status':
-                                                                      'Cancelled'
-                                                                });
+                                                                await _bookingController
+                                                                    .cancelBooking(
+                                                                        bookingId);
 
                                                                 MoonToast.show(
                                                                   context,

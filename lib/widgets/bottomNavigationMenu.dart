@@ -5,16 +5,23 @@ import 'package:hcms/screens/house/house_list.dart';
 import 'package:hcms/screens/report/house_owner_dashboard.dart';
 
 class BottomNavigationMenu extends StatefulWidget {
-  const BottomNavigationMenu({super.key});
+  final int initialIndex;
+
+  const BottomNavigationMenu({super.key, this.initialIndex = 0});
 
   @override
   State<BottomNavigationMenu> createState() => _BottomNavigationMenuState();
 }
 
 class _BottomNavigationMenuState extends State<BottomNavigationMenu> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
 
-// Letak Page Korang
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex;
+  }
+
   final List<Widget> _pages = [
     HouseListScreen(),
     BookingList(),

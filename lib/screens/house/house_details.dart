@@ -5,7 +5,7 @@ import 'package:moon_design/moon_design.dart';
 import 'edit_house.dart';
 
 class HouseDetailsScreen extends StatefulWidget {
-  final String houseId;
+  final String? houseId;
 
   HouseDetailsScreen({required this.houseId});
 
