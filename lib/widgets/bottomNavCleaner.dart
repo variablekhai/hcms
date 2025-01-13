@@ -1,24 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:hcms/screens/auth/logout.dart';
-import 'package:hcms/screens/booking/booking_list.dart';
-import 'package:hcms/screens/house/house_list.dart';
-import 'package:hcms/screens/report/house_owner_dashboard.dart';
+import 'package:hcms/screens/cleaner/cleaner_jobs.dart';
+import 'package:hcms/screens/report/cleaner_dashboard.dart';
 
-class BottomNavigationMenu extends StatefulWidget {
-  const BottomNavigationMenu({super.key});
+class BottomNavCleaner extends StatefulWidget {
+  const BottomNavCleaner({super.key});
 
   @override
-  State<BottomNavigationMenu> createState() => _BottomNavigationMenuState();
+  State<BottomNavCleaner> createState() => _BottomNavCleanerState();
 }
 
-class _BottomNavigationMenuState extends State<BottomNavigationMenu> {
+class _BottomNavCleanerState extends State<BottomNavCleaner> {
   int _selectedIndex = 0;
 
 // Letak Page Korang
   final List<Widget> _pages = [
-    HouseListScreen(),
-    BookingList(),
-    const HouseOwnerDashboard(),
+    CleanerJobs(),
+    CleanerDashboard(),
     LogoutPage(),
   ];
 
@@ -39,12 +37,8 @@ class _BottomNavigationMenuState extends State<BottomNavigationMenu> {
         type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_month),
-            label: 'Booking',
+            icon: Icon(Icons.work),
+            label: 'Jobs',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.insert_chart),
