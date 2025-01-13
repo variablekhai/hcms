@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hcms/controllers/user_controller.dart';
 import 'package:hcms/screens/auth/register.dart';
-import 'package:hcms/screens/cleaner/cleaner_jobs.dart';
-import 'package:hcms/screens/house/house_list.dart';
-import 'package:hcms/screens/report/cleaner_dashboard.dart';
-import 'package:hcms/screens/report/house_owner_dashboard.dart';
+import 'package:hcms/widgets/bottomNavCleaner.dart';
 import 'package:hcms/widgets/bottomNavigationMenu.dart';
 
 class LoginView extends StatefulWidget {
@@ -186,7 +183,6 @@ class _LoginViewState extends State<LoginView> {
   // Login Handler (Placeholder)
   void _handleLogin() {
     if (_formKey.currentState!.validate()) {
-
       String email = _emailController.text;
       String password = _passwordController.text;
 
@@ -196,7 +192,8 @@ class _LoginViewState extends State<LoginView> {
       );
 
       if (user != null && user['role'] != null) {
-        UserController().setUser(user['id']!, user['name']!, user['email']!, user['role']!);
+        UserController()
+            .setUser(user['id']!, user['name']!, user['email']!, user['role']!);
         _navigateToUserScreen();
       }
     }
@@ -208,7 +205,9 @@ class _LoginViewState extends State<LoginView> {
     Navigator.of(context).pushReplacement(MaterialPageRoute(
         builder: (context) =>
             // Determine screen based on user type
-            user?.role! == 'house_owner' ? BottomNavigationMenu() : CleanerJobs()));
+            user?.role! == 'house_owner'
+                ? const BottomNavigationMenu()
+                : const BottomNavCleaner()));
   }
 
   void _navigateToRegister() {
