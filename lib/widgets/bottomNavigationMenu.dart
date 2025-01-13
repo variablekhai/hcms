@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hcms/screens/auth/logout.dart';
 import 'package:hcms/screens/booking/booking_list.dart';
 import 'package:hcms/screens/house/house_list.dart';
 import 'package:hcms/screens/payment/checkout.dart';
@@ -19,7 +20,7 @@ class _BottomNavigationMenuState extends State<BottomNavigationMenu> {
     HouseListScreen(),
     BookingList(),
     const HouseOwnerDashboard(),
-    BookingList(),
+    LogoutPage(),
   ];
 
   void _onItemTapped(int index) {
