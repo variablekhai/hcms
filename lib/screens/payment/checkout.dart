@@ -2,15 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:hcms/controllers/payment/payment_controller.dart';
 import 'package:hcms/controllers/rating/rating_controller.dart';
-import 'package:hcms/screens/auth/login.dart';
-import 'package:hcms/screens/booking/edit_booking.dart';
 import 'package:moon_design/moon_design.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
 import 'package:hcms/controllers/user_controller.dart';
-import 'package:hcms/screens/booking/edit_booking.dart';
 import 'package:hcms/screens/booking/widgets/status_chip.dart';
-import 'package:moon_design/moon_design.dart';
 
 // Create a separate stateful widget for the rating
 class CleanerRatingBar extends StatefulWidget {
