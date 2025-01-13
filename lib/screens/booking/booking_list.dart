@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:hcms/controllers/booking/booking_controller.dart';
 import 'package:hcms/controllers/user_controller.dart';
+import 'package:hcms/models/booking_model.dart';
 import 'package:hcms/screens/booking/add_booking.dart';
 import 'package:hcms/screens/booking/booking_details.dart';
 import 'package:hcms/screens/booking/widgets/filters_dropdown.dart';
@@ -47,6 +49,7 @@ class BookingList extends StatefulWidget {
   _BookingListState createState() => _BookingListState();
 
   final user = UserController().currentUser!;
+  final _bookingController = BookingController();
 }
 
 class _BookingListState extends State<BookingList> {
@@ -64,35 +67,28 @@ class _BookingListState extends State<BookingList> {
           ),
           // Booking List Section
           Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('bookings')
-                  .where('owner_id', isEqualTo: widget.user.id)
-                  .snapshots(),
+            child: StreamBuilder<List<BookingModel>>(
+              stream: widget._bookingController.getBookingsByOwnerId(widget.user.id),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
-                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const Center(
                       child: Text('You have not made any bookings.'));
                 }
-                final bookings = snapshot.data!.docs;
+                final bookings = snapshot.data!;
                 return ListView.builder(
                   itemCount: bookings.length,
                   itemBuilder: (context, index) {
                     final booking = bookings[index];
                     return BookingCard(
                       bookingId: booking.id,
-                      houseId: booking['house_id'].id,
-                      cleanerId: booking['cleaner_id'],
-                      bookingDateTime:
-                          (booking['booking_datetime'] as Timestamp)
-                              .toDate()
-                              .toString(),
-                      bookingStatus: booking['booking_status'],
-                      bookingTotalCost:
-                          (booking['booking_total_cost'] as num).toDouble(),
+                      houseId: booking.houseId,
+                      cleanerId: booking.cleanerId,
+                      bookingDateTime: booking.bookingDateTime.toString(),
+                      bookingStatus: booking.bookingStatus,
+                      bookingTotalCost: booking.bookingTotalCost,
                     );
                   },
                 );

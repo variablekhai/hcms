@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hcms/controllers/booking/booking_controller.dart';
 import 'package:hcms/controllers/user_controller.dart';
-import 'package:hcms/screens/booking/booking_list.dart';
+import 'package:hcms/models/booking_model.dart';
+import 'package:hcms/widgets/bottomNavigationMenu.dart';
 import 'package:intl/intl.dart';
 import 'package:moon_design/moon_design.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -44,6 +46,7 @@ class AddBookingScreen extends StatefulWidget {
   _AddBookingScreenState createState() => _AddBookingScreenState();
 
   final user = UserController().currentUser!;
+  final BookingController _bookingController = BookingController();
 }
 
 class _AddBookingScreenState extends State<AddBookingScreen> {
@@ -79,24 +82,25 @@ class _AddBookingScreenState extends State<AddBookingScreen> {
       final String time = _timeController.text;
       final String duration = _durationController.text;
       final String wage = _wageController.text;
-      final String houseId = _selectedHouseId;
 
       final dateTimeString = '$date $time';
       final dateTime = DateFormat('yyyy-MM-dd h:mm a').parse(dateTimeString);
 
-      FirebaseFirestore.instance.collection('bookings').add({
-        'booking_datetime': Timestamp.fromDate(dateTime),
-        'booking_status': 'Pending',
-        'booking_total_cost': double.parse(wage),
-        'booking_duration': int.parse(duration),
-        'booking_requirements': _requirementsController.text,
-        'cleaner_id': 'N/A',
-        'house_id':
-            FirebaseFirestore.instance.collection('houses').doc(houseId),
-        'owner_id': widget.user.id,
-      }).then((_) {
+      final booking = BookingModel(
+        id: '', // Will be set by Firestore
+        bookingDateTime: dateTime,
+        bookingStatus: 'Pending',
+        bookingTotalCost: double.parse(wage),
+        bookingDuration: int.parse(duration),
+        bookingRequirements: _requirementsController.text,
+        cleanerId: 'N/A',
+        houseId: _selectedHouseId,
+        ownerId: widget.user.id,
+      );
+
+      widget._bookingController.createBooking(booking).then((_) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => BookingList()),
+          MaterialPageRoute(builder: (context) => const BottomNavigationMenu(initialIndex: 1,)),
         );
         MoonToast.show(context,
             backgroundColor: Colors.green[50],

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:hcms/controllers/house/house_controller.dart';
 import 'package:hcms/controllers/user_controller.dart';
+import 'package:hcms/models/house_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:moon_design/moon_design.dart';
 
@@ -14,6 +15,7 @@ class AddHouseScreen extends StatefulWidget {
   _AddHouseScreenState createState() => _AddHouseScreenState();
 
   final user = UserController().currentUser!;
+  final HouseController _houseController = HouseController();
 }
 
 class _AddHouseScreenState extends State<AddHouseScreen> {
@@ -68,16 +70,16 @@ class _AddHouseScreenState extends State<AddHouseScreen> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      Map<String, dynamic> newHouse = {
-        'house_picture': _imageUrl ?? 'assets/house-placeholder.png',
-        'house_name': _houseNameController.text,
-        'house_address': _addressController.text,
-        'house_size': '${_sizeController.text} sq ft',
-        'house_no_of_rooms': '${_roomsController.text} Rooms',
-        'owner_id': widget.user.id,
-      };
+      final house = House(
+        housePicture: _imageUrl ?? 'assets/house-placeholder.png',
+        houseName: _houseNameController.text,
+        houseAddress: _addressController.text,
+        houseSize: '${_sizeController.text} sq ft',
+        numberOfRooms: '${_roomsController.text} Rooms',
+        ownerId: widget.user.id,
+      );
 
-      FirebaseFirestore.instance.collection('houses').add(newHouse).then((_) {
+      widget._houseController.addHouse(house).then((_) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('House added successfully!')),
