@@ -413,7 +413,7 @@ class BookingDetails extends StatelessWidget {
                                             )),
                                   );
                                 },
-                                label: const Text("Make Payment"),
+                                label: const Text("Checkout"),
                               ),
                             ),
                           ],

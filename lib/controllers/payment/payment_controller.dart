@@ -2,8 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
-import 'package:hcms/screens/booking/booking_list.dart';
-import 'package:hcms/widgets/bottomNavigationMenu.dart';
 
 class PaymentController {
   PaymentController._();
@@ -60,7 +58,7 @@ class PaymentController {
       BuildContext context, String bookingId, double amount) async {
     try {
       await Stripe.instance.presentPaymentSheet();
-      navDone(context);
+      // navDone(context);
       updateBookingStatus(context, bookingId);
       addPaymentDetails(context, bookingId, amount);
     } catch (e) {
@@ -75,15 +73,6 @@ class PaymentController {
   calculateAmount(double amount) {
     final calculatedAmount = amount.round() * 100;
     return calculatedAmount;
-  }
-
-  void navDone(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BottomNavigationMenu(),
-      ),
-    );
   }
 
   void updateBookingStatus(BuildContext context, String bookingId) {

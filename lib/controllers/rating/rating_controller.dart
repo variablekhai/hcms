@@ -8,8 +8,8 @@ class RatingController {
 
   String review = '';
 
-  void addRating(
-      BuildContext context, String bookingId, double rating, String cleanerID, String ownerID) {
+  Future<void> addRating(BuildContext context, String bookingId, double rating,
+      String cleanerID, String ownerID) async {
     Map<String, dynamic> ratingDetails = {
       'booking_id': bookingId,
       'owner_id': ownerID,
