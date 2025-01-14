@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:hcms/controllers/payment/payment_controller.dart';
 import 'package:hcms/controllers/rating/rating_controller.dart';
+import 'package:hcms/models/payment_model.dart';
 import 'package:hcms/widgets/bottomNavigationMenu.dart';
 import 'package:moon_design/moon_design.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -305,11 +306,15 @@ class Checkout extends StatelessWidget {
                                 buttonSize: MoonButtonSize.lg,
                                 backgroundColor: const Color(0xFF9DC543),
                                 onTap: () {
+                                  final payment = Payment(
+                                    bookingId: bookingId,
+                                    amount: bookingData['booking_total_cost'],
+                                    paymentMethod: 'Credit Card',
+                                    paymentDate: DateTime.now(),
+                                    paymentStatus: 'Paid',
+                                  );
                                   PaymentController.instance
-                                      .makePayment(
-                                          context,
-                                          bookingData['booking_total_cost'],
-                                          bookingId)
+                                      .makePayment(context, payment)
                                       .then((_) {
                                     // Assuming makePayment handles success internally
                                     showMoonModal<void>(

@@ -2,24 +2,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
+import 'package:hcms/models/payment_model.dart';
 
 class PaymentController {
   PaymentController._();
 
   static final PaymentController instance = PaymentController._();
 
-  Future<void> makePayment(
-      BuildContext context, double amount, String bookingId) async {
+  Future<void> makePayment(BuildContext context, Payment payment) async {
     try {
       String? paymentIntentClientSecret =
-          await _createPaymentIntent(calculateAmount(amount), 'myr');
+          await _createPaymentIntent(calculateAmount(payment.amount), 'myr');
       if (paymentIntentClientSecret == null) return;
       await Stripe.instance.initPaymentSheet(
           paymentSheetParameters: SetupPaymentSheetParameters(
         paymentIntentClientSecret: paymentIntentClientSecret,
         merchantDisplayName: 'Flutter Stripe Store',
       ));
-      await _processPayment(context, bookingId, amount);
+      await _processPayment(context, payment);
     } catch (e) {
       print(e);
     }
@@ -54,13 +54,12 @@ class PaymentController {
     return null;
   }
 
-  Future<void> _processPayment(
-      BuildContext context, String bookingId, double amount) async {
+  Future<void> _processPayment(BuildContext context, Payment payment) async {
     try {
       await Stripe.instance.presentPaymentSheet();
       // navDone(context);
-      updateBookingStatus(context, bookingId);
-      addPaymentDetails(context, bookingId, amount);
+      updateBookingStatus(context, payment.bookingId);
+      addPaymentDetails(context, payment);
     } catch (e) {
       if (e is StripeException) {
         print('StripeException: ${e.error.localizedMessage}');
@@ -94,18 +93,10 @@ class PaymentController {
     });
   }
 
-  void addPaymentDetails(
-      BuildContext context, String bookingId, double amount) {
-    Map<String, dynamic> paymentDetails = {
-      'booking_id': bookingId,
-      'payment_amount': amount,
-      'payment_method': 'Credit Card',
-      'payment_date': DateTime.now(),
-      'payment_status': 'Paid',
-    };
+  void addPaymentDetails(BuildContext context, Payment payment) {
     FirebaseFirestore.instance
         .collection('payment')
-        .add(paymentDetails)
+        .add(payment.toMap())
         .then((_) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Payment details added!')),
