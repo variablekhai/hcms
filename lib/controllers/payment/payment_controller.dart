@@ -57,7 +57,6 @@ class PaymentController {
   Future<void> _processPayment(BuildContext context, Payment payment) async {
     try {
       await Stripe.instance.presentPaymentSheet();
-      // navDone(context);
       updateBookingStatus(context, payment.bookingId);
       addPaymentDetails(context, payment);
     } catch (e) {

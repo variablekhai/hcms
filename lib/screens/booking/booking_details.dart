@@ -1,35 +1,31 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:hcms/controllers/booking/booking_controller.dart';
+import 'package:hcms/controllers/rating/rating_controller.dart';
 import 'package:hcms/controllers/user_controller.dart';
 import 'package:hcms/screens/booking/edit_booking.dart';
 import 'package:hcms/screens/booking/widgets/status_chip.dart';
 import 'package:hcms/screens/payment/checkout.dart';
+import 'package:hcms/widgets/bottomNavigationMenu.dart';
+import 'package:hcms/widgets/cleaner_rating_bar.dart';
 import 'package:moon_design/moon_design.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+class BookingDetails extends StatefulWidget {
+  final String bookingId;
 
-class MyApp extends StatelessWidget {
-  const MyApp({
+  const BookingDetails({
     super.key,
+    required this.bookingId,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: BookingDetails(bookingId: '123'),
-    );
-  }
+  State<BookingDetails> createState() => _BookingDetailsState();
 }
 
-class BookingDetails extends StatelessWidget {
-  final String bookingId;
-
-  BookingDetails({super.key, required this.bookingId});
-
+class _BookingDetailsState extends State<BookingDetails> {
   final BookingController _bookingController = BookingController();
+  double rating = 5;
+  bool? isRated;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +33,7 @@ class BookingDetails extends StatelessWidget {
       body: StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance
             .collection('bookings')
-            .doc(bookingId)
+            .doc(widget.bookingId)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -55,19 +51,26 @@ class BookingDetails extends StatelessWidget {
                   .toString();
           var houseRef = bookingData['house_id'] as DocumentReference;
 
-          return FutureBuilder<DocumentSnapshot>(
-            future: houseRef.get(),
-            builder: (context, houseSnapshot) {
-              if (houseSnapshot.connectionState == ConnectionState.waiting) {
+          return FutureBuilder<List<dynamic>>(
+            future: Future.wait([
+              houseRef.get(),
+              FirebaseFirestore.instance
+                  .collection('ratings')
+                  .where('booking_id', isEqualTo: widget.bookingId)
+                  .get(),
+            ]),
+            builder: (context, snapshots) {
+              if (snapshots.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               }
 
-              if (!houseSnapshot.hasData || !houseSnapshot.data!.exists) {
+              if (!snapshots.hasData || !snapshots.data![0].exists) {
                 return const Center(child: Text('House not found'));
               }
 
-              var houseData =
-                  houseSnapshot.data!.data() as Map<String, dynamic>;
+              var houseData = snapshots.data![0].data() as Map<String, dynamic>;
+              var isRated =
+                  (snapshots.data![1] as QuerySnapshot).docs.isNotEmpty;
 
               return SingleChildScrollView(
                 child: Padding(
@@ -265,95 +268,86 @@ class BookingDetails extends StatelessWidget {
                             Expanded(
                               child: MoonOutlinedButton(
                                 buttonSize: MoonButtonSize.lg,
-                                onTap: bookingData['booking_status'] ==
-                                        'Assigned'
-                                    ? null
-                                    : () {
-                                        showMoonModal<void>(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return MoonModal(
-                                              child: SizedBox(
-                                                height: 150,
-                                                width: MediaQuery.of(context)
-                                                        .size
-                                                        .width -
-                                                    64,
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
+                                onTap: () {
+                                  showMoonModal<void>(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return MoonModal(
+                                        child: SizedBox(
+                                          height: 150,
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width -
+                                              64,
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              const Text(
+                                                  "Are you sure you want to cancel the booking?"),
+                                              const SizedBox(height: 16),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 16.0),
+                                                child: Row(
                                                   children: [
-                                                    const Text(
-                                                        "Are you sure you want to cancel the booking?"),
-                                                    const SizedBox(height: 16),
-                                                    Padding(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          horizontal: 16.0),
-                                                      child: Row(
-                                                        children: [
-                                                          Expanded(
-                                                            child:
-                                                                MoonFilledButton(
-                                                              label: const Text(
-                                                                  "Yes"),
-                                                              onTap: () async {
-                                                                await _bookingController
-                                                                    .cancelBooking(
-                                                                        bookingId);
+                                                    Expanded(
+                                                      child: MoonFilledButton(
+                                                        label:
+                                                            const Text("Yes"),
+                                                        onTap: () async {
+                                                          await _bookingController
+                                                              .cancelBooking(
+                                                                  widget
+                                                                      .bookingId);
 
-                                                                MoonToast.show(
-                                                                  context,
-                                                                  backgroundColor:
-                                                                      Colors.green[
-                                                                          50],
-                                                                  leading: Icon(
-                                                                    MoonIcons
-                                                                        .time_calendar_success_24_regular,
-                                                                    color: Colors
-                                                                            .green[
-                                                                        700],
-                                                                  ),
-                                                                  label: Text(
-                                                                    'Booking successfully cancelled',
-                                                                    style: TextStyle(
-                                                                        color: Colors
-                                                                            .green[700]),
-                                                                  ),
-                                                                );
-                                                                Navigator.of(
-                                                                        context)
-                                                                    .pop();
-                                                                Navigator.of(
-                                                                        context)
-                                                                    .pop();
-                                                              },
+                                                          MoonToast.show(
+                                                            context,
+                                                            backgroundColor:
+                                                                Colors
+                                                                    .green[50],
+                                                            leading: Icon(
+                                                              MoonIcons
+                                                                  .time_calendar_success_24_regular,
+                                                              color: Colors
+                                                                  .green[700],
                                                             ),
-                                                          ),
-                                                          const SizedBox(
-                                                              width: 10),
-                                                          Expanded(
-                                                            child:
-                                                                MoonOutlinedButton(
-                                                              label: const Text(
-                                                                  "No"),
-                                                              onTap: () {
-                                                                Navigator.of(
-                                                                        context)
-                                                                    .pop();
-                                                              },
+                                                            label: Text(
+                                                              'Booking successfully cancelled',
+                                                              style: TextStyle(
+                                                                  color: Colors
+                                                                          .green[
+                                                                      700]),
                                                             ),
-                                                          ),
-                                                        ],
+                                                          );
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 10),
+                                                    Expanded(
+                                                      child: MoonOutlinedButton(
+                                                        label: const Text("No"),
+                                                        onTap: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
                                                       ),
                                                     ),
                                                   ],
                                                 ),
                                               ),
-                                            );
-                                          },
-                                        );
-                                      },
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
                                 label: const Text("Cancel Booking"),
                               ),
                             ),
@@ -362,21 +356,15 @@ class BookingDetails extends StatelessWidget {
                               child: MoonFilledButton(
                                 buttonSize: MoonButtonSize.lg,
                                 backgroundColor: const Color(0xFF9DC543),
-                                onTap: bookingData['booking_status'] ==
-                                        'Assigned'
-                                    ? null
-                                    : () {
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                EditBookingScreen(
-                                                    bookingId: bookingId,
-                                                    houseId:
-                                                        bookingData['house_id']
-                                                            .id),
-                                          ),
-                                        );
-                                      },
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => EditBookingScreen(
+                                          bookingId: widget.bookingId,
+                                          houseId: bookingData['house_id'].id),
+                                    ),
+                                  );
+                                },
                                 label: const Text("Edit Booking"),
                               ),
                             ),
@@ -405,8 +393,7 @@ class BookingDetails extends StatelessWidget {
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) => Checkout(
-                                              bookingId: bookingId,
-                                            )),
+                                            bookingId: widget.bookingId)),
                                   );
                                 },
                                 label: const Text("Checkout"),
@@ -432,7 +419,7 @@ class BookingDetails extends StatelessWidget {
                               .where('booking_id',
                                   isEqualTo: FirebaseFirestore.instance
                                       .collection('bookings')
-                                      .doc(bookingId))
+                                      .doc(widget.bookingId))
                               .snapshots(),
                           builder: (context, activitySnapshot) {
                             if (activitySnapshot.connectionState ==
@@ -499,6 +486,145 @@ class BookingDetails extends StatelessWidget {
                             );
                           },
                         ),
+                      ],
+                      if (bookingData['booking_status'] == "Completed" &&
+                          !isRated) ...[
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: MoonFilledButton(
+                                buttonSize: MoonButtonSize.lg,
+                                backgroundColor: const Color(0xFF9DC543),
+                                onTap: () {
+                                  showMoonModal<void>(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return Material(
+                                        type: MaterialType.transparency,
+                                        child: MoonModal(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(20.0),
+                                            child: SizedBox(
+                                              height: 350,
+                                              width: MediaQuery.of(context)
+                                                      .size
+                                                      .width -
+                                                  64,
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      const Text(
+                                                        "Rating & Feedback",
+                                                        style: TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      MoonOutlinedButton(
+                                                        buttonSize:
+                                                            MoonButtonSize.sm,
+                                                        label: const Text("X"),
+                                                        onTap: () {
+                                                          Navigator.of(context)
+                                                              .pop();
+                                                        },
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const Spacer(),
+                                                  const Center(
+                                                    child: Text(
+                                                      "Please provide rating & feedback for the cleaning service.",
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 16),
+                                                  CleanerRatingBar(
+                                                    initialRating: rating,
+                                                    onRatingChanged:
+                                                        (newRating) {
+                                                      setState(() {
+                                                        rating = newRating;
+                                                      });
+                                                    },
+                                                  ),
+                                                  const SizedBox(height: 16),
+                                                  MoonTextArea(
+                                                    height: 150,
+                                                    hintText:
+                                                        'Write your comments here...',
+                                                    validator: (String?
+                                                            value) =>
+                                                        value != null &&
+                                                                value.length < 5
+                                                            ? "The text should be longer than 5 characters."
+                                                            : null,
+                                                    onChanged: (value) {
+                                                      RatingController.instance
+                                                          .updateReview(value);
+                                                    },
+                                                  ),
+                                                  const SizedBox(height: 16),
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: MoonFilledButton(
+                                                          label: const Text(
+                                                              "Submit Rating"),
+                                                          onTap: () async {
+                                                            await RatingController
+                                                                .instance
+                                                                .addRating(
+                                                                    context,
+                                                                    widget
+                                                                        .bookingId,
+                                                                    rating,
+                                                                    bookingData[
+                                                                        'cleaner_id'],
+                                                                    houseData[
+                                                                        'owner_id'])
+                                                                .then((_) {
+                                                              Navigator.push(
+                                                                context,
+                                                                MaterialPageRoute(
+                                                                  builder:
+                                                                      (context) =>
+                                                                          const BottomNavigationMenu(
+                                                                    initialIndex:
+                                                                        1,
+                                                                  ),
+                                                                ),
+                                                              );
+                                                            });
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                                label: const Text("Rate Cleaner"),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
                       ],
                     ],
                   ),

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:hcms/models/rating_model.dart';
 
 class RatingController {
   RatingController._();
@@ -10,17 +11,17 @@ class RatingController {
 
   Future<void> addRating(BuildContext context, String bookingId, double rating,
       String cleanerID, String ownerID) async {
-    Map<String, dynamic> ratingDetails = {
-      'booking_id': bookingId,
-      'owner_id': ownerID,
-      'cleaner_id': cleanerID,
-      'rating_score': rating,
-      'rating_review': review,
-      'rating_date': DateTime.now(),
-    };
+    Rating ratingModel = Rating(
+      bookingId: bookingId,
+      ownerId: ownerID,
+      cleanerId: cleanerID,
+      ratingScore: rating,
+      ratingReview: review,
+      ratingDate: DateTime.now(),
+    );
     FirebaseFirestore.instance
         .collection('ratings')
-        .add(ratingDetails)
+        .add(ratingModel.toMap())
         .then((_) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Rating added!')),

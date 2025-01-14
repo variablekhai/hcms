@@ -1,60 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:hcms/controllers/payment/payment_controller.dart';
 import 'package:hcms/controllers/rating/rating_controller.dart';
 import 'package:hcms/models/payment_model.dart';
 import 'package:hcms/widgets/bottomNavigationMenu.dart';
+import 'package:hcms/widgets/cleaner_rating_bar.dart';
 import 'package:moon_design/moon_design.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hcms/controllers/user_controller.dart';
 import 'package:hcms/screens/booking/widgets/status_chip.dart';
-
-// Create a separate stateful widget for the rating
-class CleanerRatingBar extends StatefulWidget {
-  final double initialRating;
-  final Function(double) onRatingChanged;
-
-  const CleanerRatingBar({
-    super.key,
-    this.initialRating = 5,
-    required this.onRatingChanged,
-  });
-
-  @override
-  State<CleanerRatingBar> createState() => _CleanerRatingBarState();
-}
-
-class _CleanerRatingBarState extends State<CleanerRatingBar> {
-  late double _rating;
-
-  @override
-  void initState() {
-    super.initState();
-    _rating = widget.initialRating;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return RatingBar.builder(
-      initialRating: _rating,
-      minRating: 1,
-      direction: Axis.horizontal,
-      allowHalfRating: true,
-      itemCount: 5,
-      itemPadding: const EdgeInsets.symmetric(horizontal: 4.0),
-      itemBuilder: (context, _) => const Icon(
-        Icons.star,
-        color: Colors.amber,
-      ),
-      onRatingUpdate: (rating) {
-        setState(() {
-          _rating = rating;
-        });
-        widget.onRatingChanged(rating);
-      },
-    );
-  }
-}
 
 class Checkout extends StatelessWidget {
   final String bookingId;
@@ -316,136 +269,7 @@ class Checkout extends StatelessWidget {
                                   PaymentController.instance
                                       .makePayment(context, payment)
                                       .then((_) {
-                                    // Assuming makePayment handles success internally
-                                    showMoonModal<void>(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return Material(
-                                          type: MaterialType
-                                              .transparency, // Makes the background of Material transparent
-                                          child: MoonModal(
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(20.0),
-                                              child: SizedBox(
-                                                height:
-                                                    350, // Adjust the height to accommodate the text area
-                                                width: MediaQuery.of(context)
-                                                        .size
-                                                        .width -
-                                                    64,
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .spaceBetween,
-                                                      children: [
-                                                        const Text(
-                                                          "Rating & Feedback",
-                                                          style: TextStyle(
-                                                            fontSize: 16,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                          ),
-                                                        ),
-                                                        MoonOutlinedButton(
-                                                          buttonSize:
-                                                              MoonButtonSize.sm,
-                                                          label:
-                                                              const Text("X"),
-                                                          onTap: () {
-                                                            Navigator.of(
-                                                                    context)
-                                                                .pop();
-                                                          },
-                                                        ),
-                                                      ],
-                                                    ),
-                                                    const Spacer(),
-                                                    const Center(
-                                                      child: Text(
-                                                        "Please provide rating & feedback for the cleaning service.",
-                                                        textAlign:
-                                                            TextAlign.center,
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 16),
-                                                    CleanerRatingBar(
-                                                      initialRating: rating,
-                                                      onRatingChanged:
-                                                          (newRating) {
-                                                        // Handle the rating change here if needed
-                                                        rating = newRating;
-                                                        print(
-                                                            'New rating: $newRating');
-                                                        print(rating);
-                                                      },
-                                                    ),
-                                                    const SizedBox(height: 16),
-                                                    MoonTextArea(
-                                                      height: 150,
-                                                      hintText:
-                                                          'Write your comments here...',
-                                                      validator: (String?
-                                                              value) =>
-                                                          value != null &&
-                                                                  value.length <
-                                                                      5
-                                                              ? "The text should be longer than 5 characters."
-                                                              : null,
-                                                      onChanged: (value) {
-                                                        // Handle the review text change here
-                                                        RatingController
-                                                            .instance
-                                                            .updateReview(
-                                                                value);
-                                                      },
-                                                    ),
-                                                    const SizedBox(height: 16),
-                                                    Row(
-                                                      children: [
-                                                        Expanded(
-                                                          child:
-                                                              MoonFilledButton(
-                                                            label: const Text(
-                                                                "Submit Rating"),
-                                                            onTap: () async {
-                                                              RatingController
-                                                                  .instance
-                                                                  .addRating(
-                                                                      context,
-                                                                      bookingId,
-                                                                      rating,
-                                                                      bookingData[
-                                                                          'cleaner_id'],
-                                                                      houseData[
-                                                                          'owner_id'])
-                                                                  .then((_) {
-                                                                Navigator.push(
-                                                                  context,
-                                                                  MaterialPageRoute(
-                                                                    builder:
-                                                                        (context) =>
-                                                                            const BottomNavigationMenu(),
-                                                                  ),
-                                                                );
-                                                              });
-                                                            },
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    );
+                                    Navigator.of(context).pop();
                                   }).catchError((error) {
                                     // Handle payment failure if needed
                                   });
