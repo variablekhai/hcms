@@ -1,9 +1,11 @@
 // lib/main.dart
+import 'package:app_links/app_links.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:hcms/screens/auth/login.dart';
 import 'package:hcms/firebase_options.dart';
+import 'package:hcms/screens/booking/booking_list.dart';
 import 'package:moon_design/moon_design.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -14,10 +16,20 @@ Future<void> main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
+  final appLinks = AppLinks(); // Initialize AppLinks
+
   await Firebase.initializeApp(
     name: 'hcms',
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  appLinks.uriLinkStream.listen((uri) {
+    // Handle the deep link
+    if (uri.path == '/payment-success') {
+      // Navigate to the payment success screen
+      print('Payment was successful!');
+    }
+  });
 
   runApp(
     const MyApp(),

@@ -13,8 +13,8 @@ class ToyyibPayService {
     required String userEmail,
     required String userPhone,
     required String categoryCode,
-    String returnUrl = 'https://yourapp.com/return',
-    String callbackUrl = 'https://yourapp.com/callback',
+    String returnUrl = 'https://sendiribuat.com/payment-success',
+    String callbackUrl = 'https://sendiribuat.com/callback',
   }) async {
     try {
       final response = await http.post(
